@@ -256,16 +256,20 @@ async function telaRelatorioForm(r) {
   $('#excluir')?.addEventListener('click', async () => {
     const aviso = r.driveFolderId ? '\n\nA pasta no Drive vai para a lixeira do Drive (dá para recuperar por 30 dias).' : '';
     if (!confirm('Excluir este relatório com todas as despesas e comprovantes?' + aviso)) return;
-    for (const d of await despesasDe(r.id)) {
-      if (d.arquivoId) await dbDel('arquivos', d.arquivoId);
-      await dbDel('despesas', d.id);
-    }
-    if (r.driveFolderId) await paraLixeira(r.driveFolderId);
-    await dbDel('relatorios', r.id);
-    agendarSync();
-    toast('Relatório excluído');
-    go('/');
+    await excluirRelatorio(r, true);
   });
+}
+
+async function excluirRelatorio(r, apagarDrive) {
+  for (const d of await despesasDe(r.id)) {
+    if (d.arquivoId) await dbDel('arquivos', d.arquivoId);
+    await dbDel('despesas', d.id);
+  }
+  if (apagarDrive && r.driveFolderId) await paraLixeira(r.driveFolderId);
+  await dbDel('relatorios', r.id);
+  agendarSync();
+  toast('Relatório removido');
+  go('/');
 }
 
 async function telaRelatorio(r) {
@@ -301,7 +305,7 @@ async function telaRelatorio(r) {
       ${aberto
         ? `<a class="btn primario" href="#/r/${r.id}/d/nova">+ Adicionar despesa</a>${l.length ? '<button id="fechar" class="btn">Fechar relatório</button>' : ''}`
         : r.status === 'enviado'
-          ? `<a class="btn" href="#/r/${r.id}/resumo">Ver resumo</a>`
+          ? `<a class="btn" href="#/r/${r.id}/resumo">Ver resumo</a><button id="remover" class="btn perigo">Remover do app</button>`
           : `${ag ? `<button id="enviar" class="btn primario">${criados.length ? 'Continuar envio ao Agidesk' : 'Enviar ao Agidesk'}</button><div id="progresso" class="sub rodape"></div>` : ''}
              <a class="btn${ag ? '' : ' primario'}" href="#/r/${r.id}/resumo">Ver resumo (copiar e colar)</a>
              ${criados.length ? '' : '<button id="reabrir" class="btn">Reabrir</button>'}`}
@@ -334,6 +338,11 @@ async function telaRelatorio(r) {
       alert('Envio não concluído: ' + err.message + '\n\nO que já foi enviado fica registrado; tocar de novo continua de onde parou.');
     } finally { enviandoAgidesk = false; }
     rota();
+  });
+  $('#remover')?.addEventListener('click', async () => {
+    if (!confirm('Remover este relatório do app? O atendimento no Agidesk não é afetado.')) return;
+    const drive = r.driveFolderId && confirm('Mandar também a pasta do Drive para a lixeira?\n\nOK = apagar a pasta (dá para recuperar por 30 dias)\nCancelar = manter a pasta como arquivo do reembolso');
+    await excluirRelatorio(r, drive);
   });
   $('#reabrir')?.addEventListener('click', async () => {
     await salvarCampos('relatorios', r.id, { status: 'aberto', fechadoEm: null });
