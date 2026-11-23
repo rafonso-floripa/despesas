@@ -6,6 +6,7 @@
   :root { --fundo: #16171a; --card: #202226; --texto: #ececec; --sub: #a0a4ab; --borda: #34373d; --aviso: #3a2a12; }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--fundo); color: var(--texto); font-size: 16px; -webkit-tap-highlight-color: transparent; }
 
 header { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top) + 12px) 16px 12px; background: var(--cor); color: #fff; }
