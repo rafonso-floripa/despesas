@@ -202,6 +202,7 @@ async function telaConfig() {
     b.disabled = true; b.textContent = 'Conectando…';
     try {
       const v = await agConectar(f.chave.value.trim(), f.email.value.trim());
+      await atualizarListas();
       toast('Agidesk conectado: ' + v.contatoNome);
       rota();
     } catch (err) { alert(err.message); b.disabled = false; b.textContent = 'Conectar'; }
@@ -536,5 +537,6 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) sinc
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js');
 }
-rota();
+carregarListas().finally(() => rota());
+atualizarListas();
 prepararGoogle().then(sincronizar);

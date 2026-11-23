@@ -55,6 +55,25 @@ async function agListas(chave) {
   return { eventos: mapa(ev), centros: mapa(cc) };
 }
 
+// Listas das telas (Evento e Centro) vindas do Agidesk, guardadas no aparelho.
+// Sem chave ou sem rede, valem as últimas guardadas ou, na falta, valores.js.
+async function carregarListas() {
+  const c = await dbGet('config', 'listasAgidesk');
+  if (c) Object.assign(VALORES, c.valor);
+}
+async function atualizarListas() {
+  const cfg = await agConfig();
+  if (!cfg || !navigator.onLine) return;
+  try {
+    const [ev, cc] = await Promise.all([agFetch('formfielditems?limit=500', cfg.chave), agFetch('costcenters?limit=500', cfg.chave)]);
+    const nomes = l => (l || []).filter(x => x.active === '1').map(x => x.title).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const valor = { eventos: nomes(ev), centros: nomes(cc) };
+    if (!valor.centros.length) return;
+    await dbPut('config', { chave: 'listasAgidesk', valor });
+    Object.assign(VALORES, valor);
+  } catch (e) { console.warn('Listas do Agidesk:', e); }
+}
+
 function blobBase64(blob) {
   return new Promise((res, rej) => {
     const f = new FileReader();

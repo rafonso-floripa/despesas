@@ -292,6 +292,7 @@ async function mostrarSync() {
   else if (sync.rodando) html = `<div class="sync">⏳ Enviando ao Drive…</div>`;
   else if ((n || pend) && !navigator.onLine) html = `<div class="sync">📴 ${n ? qtd + ' guardado(s) no celular' : 'Alterações guardadas no celular'}. Envio quando houver internet.</div>`;
   else if (sync.estado === 'erro') html = `<div class="sync alerta">Erro no envio: ${esc(sync.erro)} <button class="mini" data-sync>Tentar de novo</button></div>`;
+  else if ((n || pend) && !lerToken()) html = `<div class="sync alerta">🔑 A conexão com o Google expirou. ${n ? qtd + ' aguardando' : 'Alterações aguardando'}. <button class="mini" data-sync>Reconectar ao Google</button></div>`;
   else if (n || pend) html = `<div class="sync">📱 ${n ? qtd + ' aguardando envio' : 'Alterações aguardando envio'} <button class="mini" data-sync>Enviar ao Drive</button></div>`;
   else if (desp.length) html = `<div class="sync ok">✓ Tudo salvo no Drive</div>`;
   el.innerHTML = html;
