@@ -280,8 +280,9 @@ async function mostrarSync() {
   const desp = await dbAll('despesas');
   const n = desp.filter(d => d.arquivoId).length;
   const qtd = `${n} comprovante${n === 1 ? '' : 's'}`;
-  let pend = false;
-  if (!n) {
+  const lx = await dbGet('config', 'lixeira');
+  let pend = (lx?.ids?.length || 0) > 0; // exclusões aguardando ir para a lixeira do Drive
+  if (!n && !pend) {
     const por = {};
     desp.forEach(d => (por[d.relatorioId] ||= []).push(d));
     for (const r of await dbAll('relatorios')) if (await precisaSync(r, por[r.id] || [])) { pend = true; break; }
