@@ -165,6 +165,7 @@ async function telaLista() {
 async function telaConfig() {
   const nome = await nomeColaborador();
   const raiz = await dbGet('config', 'driveRaiz');
+  const ag = await agConfig();
   topo('Configurações', nome ? '/' : null);
   let uso = '';
   if (navigator.storage?.estimate) {
@@ -183,7 +184,33 @@ async function telaConfig() {
       <button id="pasta" class="btn">${raiz ? 'Trocar pasta' : 'Conectar e escolher a pasta'}</button>
       <p class="dica">Cada relatório vira uma subpasta "AAAA-MM-DD-Nome" (data da primeira nota) com os comprovantes e uma planilha. A cópia no celular é apagada depois que o Drive confirma o recebimento. O app só enxerga o que ele mesmo cria.</p>
     </section>
+    <form id="fag" class="card">
+      <h3>Agidesk</h3>
+      ${ag ? `<p>Conectado como <strong>${esc(ag.contatoNome)}</strong> (contato ${ag.contatoId}).</p>` : '<p>Ainda não conectado: o envio é feito copiando e colando.</p>'}
+      <label>Seu e-mail no Agidesk
+        <input name="email" type="email" required value="${esc(ag?.email || '')}" placeholder="nome@realcloud.com.br" autocomplete="email"></label>
+      <label>Chave de acesso
+        <input name="chave" type="password" required value="${esc(ag?.chave || '')}" autocomplete="off"></label>
+      <button class="btn">${ag ? 'Atualizar' : 'Conectar'}</button>
+      ${ag ? '<button type="button" id="agsair" class="btn perigo">Desconectar</button>' : ''}
+      <p class="dica">No Agidesk: "Oi, Usuário" → Meus dados → Relações → Chaves de acesso. A chave fica só neste aparelho.</p>
+    </form>
     <p class="dica">${uso}</p>`;
+  $('#fag').onsubmit = async e => {
+    e.preventDefault();
+    const f = e.target, b = f.querySelector('button');
+    b.disabled = true; b.textContent = 'Conectando…';
+    try {
+      const v = await agConectar(f.chave.value.trim(), f.email.value.trim());
+      toast('Agidesk conectado: ' + v.contatoNome);
+      rota();
+    } catch (err) { alert(err.message); b.disabled = false; b.textContent = 'Conectar'; }
+  };
+  $('#agsair')?.addEventListener('click', async () => {
+    if (!confirm('Apagar a chave do Agidesk deste aparelho?')) return;
+    await dbDel('config', 'agidesk');
+    rota();
+  });
   $('#f').onsubmit = async e => {
     e.preventDefault();
     const v = e.target.nome.value.trim();
@@ -245,6 +272,8 @@ async function telaRelatorio(r) {
   const nome = await nomeColaborador();
   const l = await despesasDe(r.id);
   const aberto = r.status === 'aberto';
+  const ag = await agConfig();
+  const criados = (r.agidesk?.atendimentos || []).filter(a => a?.id).map(a => a.id);
   let aviso = '';
   if (l.length > LIMITE_ITENS) aviso = `O Agidesk aceita até ${LIMITE_ITENS} itens por reembolso. Este relatório será dividido em ${Math.ceil(l.length / LIMITE_ITENS)} atendimentos.`;
   else if (l.length >= LIMITE_ITENS - 2) aviso = `Perto do limite de ${LIMITE_ITENS} itens por reembolso do Agidesk.`;
@@ -259,6 +288,7 @@ async function telaRelatorio(r) {
       <div class="total grande">${brl(soma(l))}</div>
       <div class="sub">${l.length}/${LIMITE_ITENS} itens${r.driveFolderId ? ` · <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">Abrir pasta no Drive</a>` : ''}</div>
       ${aviso ? `<p class="aviso">${aviso}</p>` : ''}
+      ${criados.length ? `<p class="aviso">${r.status === 'enviado' ? '✓ Enviado ao Agidesk' : 'Envio ao Agidesk incompleto'}: atendimento${criados.length > 1 ? 's' : ''} nº ${criados.join(', ')}.</p>` : ''}
     </section>
     ${l.length ? l.map((d, i) => `
       <a class="card item" href="#/r/${r.id}/d/${d.id}">
@@ -269,7 +299,11 @@ async function telaRelatorio(r) {
     <div class="barra">
       ${aberto
         ? `<a class="btn primario" href="#/r/${r.id}/d/nova">+ Adicionar despesa</a>${l.length ? '<button id="fechar" class="btn">Fechar relatório</button>' : ''}`
-        : `<a class="btn primario" href="#/r/${r.id}/resumo">Ver resumo para o Agidesk</a><button id="reabrir" class="btn">Reabrir</button>`}
+        : r.status === 'enviado'
+          ? `<a class="btn" href="#/r/${r.id}/resumo">Ver resumo</a>`
+          : `${ag ? `<button id="enviar" class="btn primario">${criados.length ? 'Continuar envio ao Agidesk' : 'Enviar ao Agidesk'}</button><div id="progresso" class="sub rodape"></div>` : ''}
+             <a class="btn${ag ? '' : ' primario'}" href="#/r/${r.id}/resumo">Ver resumo (copiar e colar)</a>
+             ${criados.length ? '' : '<button id="reabrir" class="btn">Reabrir</button>'}`}
     </div>`;
   mostrarSync();
   $('#fechar')?.addEventListener('click', async () => {
@@ -277,7 +311,28 @@ async function telaRelatorio(r) {
     if (sem.length) return alert(`${sem.length} despesa(s) sem anexo. O Agidesk exige comprovante em cada item.`);
     if (!confirm('Fechar o relatório? Ele fica pronto para ir ao Agidesk. Se precisar, dá para reabrir.')) return;
     await salvarCampos('relatorios', r.id, { status: 'fechado', fechadoEm: Date.now() });
-    go(`/r/${r.id}/resumo`);
+    if (await agConfig()) rota(); else go(`/r/${r.id}/resumo`);
+  });
+  $('#enviar')?.addEventListener('click', async e => {
+    if (enviandoAgidesk) return;
+    const b = e.target;
+    const n = Math.ceil(l.length / LIMITE_ITENS);
+    if (!criados.length && !confirm(`Enviar ao Agidesk ${n > 1 ? n + ' atendimentos' : 'um atendimento'} de reembolso com ${l.length} despesa(s), total ${brl(soma(l))}?\n\nIsso abre o pedido de verdade no financeiro.`)) return;
+    // login do Google tem de ser pedido já no toque (comprovantes que estão só no Drive)
+    const precisaDrive = l.some(d => !d.arquivoId && d.driveFileId && !r.agidesk?.arquivos?.[d.id]);
+    const token = precisaDrive ? pedirToken() : Promise.resolve();
+    enviandoAgidesk = true;
+    b.disabled = true;
+    const prog = $('#progresso');
+    try {
+      await token;
+      const ids = await enviarAgidesk(await dbGet('relatorios', r.id), t => { prog.textContent = t; });
+      alert(`Enviado! Atendimento${ids.length > 1 ? 's' : ''} nº ${ids.join(', ')} no Agidesk.`);
+    } catch (err) {
+      console.error(err);
+      alert('Envio não concluído: ' + err.message + '\n\nO que já foi enviado fica registrado; tocar de novo continua de onde parou.');
+    } finally { enviandoAgidesk = false; }
+    rota();
   });
   $('#reabrir')?.addEventListener('click', async () => {
     await salvarCampos('relatorios', r.id, { status: 'aberto', fechadoEm: null });
@@ -466,8 +521,10 @@ async function rota(manterScroll) {
 }
 
 // Depois de sincronizar: redesenha só telas sem formulário (não perde o que está sendo digitado)
+let enviandoAgidesk = false;
 function aoTerminarSync() {
   const h = location.hash;
+  if (enviandoAgidesk) return mostrarSync();
   if (h === '' || h === '#/' || /^#\/r\/[^/]+(\/resumo)?$/.test(h)) rota(true);
   else mostrarSync();
 }
