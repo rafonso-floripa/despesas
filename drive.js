@@ -128,7 +128,7 @@ function csvRelatorio(r, l, nome) {
   const q = v => { let s = String(v ?? ''); if (/^[=+\-@]/.test(s)) s = ' ' + s; return '"' + s.replace(/"/g, '""') + '"'; };
   const num = c => `=${c}/100`;
   const linhas = [
-    ['', '', q('Titulo: ' + tituloRelatorio(r, nome, l))],
+    ['', '', q('Titulo: ' + tituloRelatorio(r, nome))],
     ['', '', q('Valor Total'), num(soma(l))],
     [],
     ['Ordem', 'Data da Despesa', 'Descrição da Despesa', 'Valor da NF', 'Evento / Projeto', 'Centro de Custos', 'Arquivo', 'Observação (opcional)'].map(q),
