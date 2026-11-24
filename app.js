@@ -28,7 +28,9 @@ function aplicarOlho(trocar) {
   try { o = localStorage.getItem('ocultarValores') === '1'; if (trocar) { o = !o; localStorage.setItem('ocultarValores', o ? '1' : '0'); } } catch { /* sem storage */ }
   document.body.classList.toggle('ocultar', o);
   const b = $('#olho');
-  b.textContent = o ? '🙈' : '👁';
+  const svg = p => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const olho = '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+  b.innerHTML = svg(o ? olho + '<line x1="3" y1="3" x2="21" y2="21"/>' : olho);
   b.title = o ? 'Mostrar valores' : 'Esconder valores';
 }
 $('#olho').onclick = () => aplicarOlho(true);
