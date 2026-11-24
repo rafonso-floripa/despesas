@@ -19,12 +19,12 @@ async function agConfig() {
   return c ? c.valor : null;
 }
 
-async function agFetch(caminho, chave, params) {
+async function agFetch(caminho, chave, params, metodo) {
   const sep = caminho.includes('?') ? '&' : '?';
   let r;
   try {
     r = await fetch(`${AG.url}${caminho}${sep}app_key=${encodeURIComponent(chave)}`, {
-      method: params ? 'POST' : 'GET',
+      method: metodo || (params ? 'POST' : 'GET'),
       headers: { 'X-Tenant-ID': AG.tenant, ...(params ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) },
       body: params ? new URLSearchParams(params) : undefined,
     });
@@ -184,6 +184,11 @@ async function enviarAgidesk(r, progresso) {
     if (!t?.id) throw new Error('O Agidesk não devolveu o número do atendimento.');
     ag.atendimentos[k] = { id: Number(t.id), titulo, criadoEm: Date.now() };
     await gravar();
+    // Estética: a 1ª interação criada pela API vem como "Geral" (fundo amarelo); o portal usa "Externo" (3).
+    try {
+      const cs = await agFetch(`tasks/${t.id}/comments`, cfg.chave);
+      if (cs?.[0]?.id && cs[0].privacy_id !== '3') await agFetch(`comments/${cs[0].id}`, cfg.chave, { privacy_id: 3 }, 'PUT');
+    } catch (e) { console.warn('Privacidade da interação não ajustada:', e); }
   }
 
   await salvarCampos('relatorios', r.id, { status: 'enviado', enviadoEm: Date.now() });
