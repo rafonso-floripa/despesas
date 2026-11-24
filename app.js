@@ -190,7 +190,7 @@ async function telaLista() {
     <div id="sync"></div>
     ${todos.length ? `
       <input id="busca" type="search" class="busca" value="${esc(buscaAtual)}" placeholder="🔎 Buscar por nome, descrição ou data (ex.: 11/2026)">
-      <h3 class="secao">Em aberto <span class="sub">(${abertos.length})</span></h3>
+      <h3 class="secao">Abertos <span class="sub">(${abertos.length})</span></h3>
       ${abertos.map(card).join('') || '<p class="sub vazio-sec">Nenhum relatório aberto.</p>'}
       ${fechados.length ? `<h3 class="secao">Fechados <span class="sub">(${fechados.length})</span></h3>${fechados.map(card).join('')}` : ''}
       <p id="nada" class="vazio" hidden>Nada encontrado.</p>` : `
@@ -512,7 +512,7 @@ async function telaResumo(r) {
     ${extra ?? (txt ? `<button type="button" class="mini" data-copy="${esc(txt)}">Copiar</button>` : '')}</div>`;
 
   app.innerHTML = `
-    <p class="dica">Até a integração ficar pronta, use esta tela para preencher o "Reembolsos gerais" no Agidesk: toque em Copiar e cole em cada campo.
+    <p class="dica">Use esta tela para preencher o "Reembolsos gerais" no Agidesk: toque em Copiar e cole em cada campo.
     ${r.driveFolderId ? ` Os comprovantes estão na <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">pasta do Drive</a>.` : ''}</p>
     ${partes.map((p, k) => {
       const sufixo = partes.length > 1 ? ` (${k + 1}/${partes.length})` : '';
