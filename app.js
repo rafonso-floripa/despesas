@@ -93,10 +93,11 @@ async function nomeColaborador() {
   return c ? c.valor : '';
 }
 // Padrão do financeiro: "Reembolso - Colaborador - mês/ano - Projeto/Evento".
-// mês/ano = mês do envio ao Agidesk; final = nome do relatório (ou o evento, se não houver nome).
+// mês/ano = mês do envio ao Agidesk, a não ser que o usuário tenha digitado outro;
+// final = nome do relatório (ou o evento, se não houver nome).
 function tituloRelatorio(r, nome) {
   const quando = r.enviadoEm ? new Date(r.enviadoEm) : new Date();
-  const mesAno = String(quando.getMonth() + 1).padStart(2, '0') + '/' + quando.getFullYear();
+  const mesAno = r.mesAnoManual ? r.mesAno : String(quando.getMonth() + 1).padStart(2, '0') + '/' + quando.getFullYear();
   const fim = r.apelido || r.evento;
   return `Reembolso - ${nome || '<seu nome>'} - ${mesAno}` + (fim ? ` - ${fim}` : '');
 }
@@ -239,7 +240,8 @@ async function telaRelatorioForm(r) {
       <label>Nome da viagem (vai no nome da pasta do Drive)
         <input name="apelido" value="${esc(r.apelido)}" placeholder="Ex.: Visita a Clientes SP"></label>
       <label>Mês/ano*
-        <input name="mesAno" required value="${esc(r.mesAno)}" placeholder="MM/AAAA" pattern="(0[1-9]|1[0-2])/\\d{4}" title="Use o formato MM/AAAA"></label>
+        <input name="mesAno" required value="${esc(r.mesAnoManual ? r.mesAno : mesAnoAtual())}" placeholder="MM/AAAA" pattern="(0[1-9]|1[0-2])/\\d{4}" title="Use o formato MM/AAAA">
+        <span class="dica">Vai no título do Agidesk. Se não mudar, vale o mês do envio.</span></label>
       <label>Evento / Projeto
         <select name="evento">${opcoes(VALORES.eventos, r.evento, '— Nenhum —')}</select></label>
       <label>Centro de custos padrão*
@@ -251,7 +253,8 @@ async function telaRelatorioForm(r) {
   $('#f').onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
-    Object.assign(r, { apelido: f.apelido.value.trim(), mesAno: f.mesAno.value.trim(), evento: f.evento.value, centro: f.centro.value });
+    const mesAno = f.mesAno.value.trim();
+    Object.assign(r, { apelido: f.apelido.value.trim(), mesAno, mesAnoManual: mesAno !== mesAnoAtual(), evento: f.evento.value, centro: f.centro.value });
     if (novo) { r.id = novoId(); r.status = 'aberto'; r.criadoEm = Date.now(); r.versao = 0; }
     else r.versao = (r.versao || 0) + 1;
     await dbPut('relatorios', r);
