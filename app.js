@@ -34,7 +34,7 @@ function aplicarOlho(trocar) {
   const macaco = '<circle cx="3.8" cy="11.5" r="2.3"/><circle cx="20.2" cy="11.5" r="2.3"/><circle cx="12" cy="12.5" r="7.8"/>' +
     '<rect x="5.6" y="8.4" width="5.6" height="4.4" rx="2.2"/><rect x="12.8" y="8.4" width="5.6" height="4.4" rx="2.2"/>' +
     '<path d="M9.8 16.6q2.2 1.6 4.4 0"/>';
-  b.innerHTML = svg(o ? macaco : olho);
+  b.innerHTML = o ? '<span class="mac">🙈</span>' : svg(olho); // emoji clareado (ver .mac no CSS)
   b.title = o ? 'Mostrar valores' : 'Esconder valores';
 }
 $('#olho').onclick = () => aplicarOlho(true);
