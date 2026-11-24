@@ -134,7 +134,7 @@ function csvRelatorio(r, l, nome) {
     ['Ordem', 'Data da Despesa', 'Descrição da Despesa', `Valor da NF (${simbolo(r)})`, 'Evento / Projeto', 'Centro de Custos', 'Arquivo', 'Observação (opcional)'].map(q),
     ...l.map((d, i) => [
       i + 1, q(d.data), q(d.descricao), num(d.valor), q(d.evento), q(d.centro),
-      q(d.driveUrl || '(aguardando envio)'), q([moedaDe(r) === 'USD' ? 'Despesa em dólar (US$)' : '', d.obs ? `${dataBR(d.data)} - ${d.obs}` : ''].filter(Boolean).join(' - ')),
+      q(d.driveUrl || '(aguardando envio)'), q(d.obs ? `${dataBR(d.data)} - ${d.obs}` : ''),
     ]),
   ];
   return linhas.map(l => l.join(',')).join('\r\n');

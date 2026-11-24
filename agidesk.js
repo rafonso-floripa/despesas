@@ -178,7 +178,7 @@ async function enviarAgidesk(r, progresso) {
       add(`${b}[customfields][${j}][placement_id]`, C.bloco); add(`${b}[customfields][${j}][value]`, '');
       add(`${b}[customfields][${j}][files][]`, arq.id); add(`${b}[customfields][${j}][text]`, arq.nome);
     });
-    campo('customfields[3]', C.obs, obs);
+    if (obs) campo('customfields[3]', C.obs, obs);
 
     const t = await agFetch('tasks', cfg.chave, q);
     if (!t?.id) throw new Error('O Agidesk não devolveu o número do atendimento.');

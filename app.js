@@ -125,7 +125,6 @@ function tituloRelatorio(r, nome) {
   const fim = r.apelido || r.evento;
   return `Reembolso - ${nome || '<seu nome>'} - ${mesAno}` + (fim ? ` - ${fim}` : '') + (moedaDe(r) === 'USD' ? ' (USD)' : '');
 }
-// Linhas do campo Observações do Agidesk. Em dólar: aviso no topo e o valor em US$ em cada item.
 // "23/11/2026" → "2026-11-23" (ou null se a data não existir)
 function lerData(txt) {
   const m = String(txt || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
@@ -135,10 +134,11 @@ function lerData(txt) {
   if (dt.getFullYear() !== a || dt.getMonth() !== mes - 1 || dt.getDate() !== d || a < 2000) return null;
   return `${a}-${String(mes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
+// Campo Observações do Agidesk: só o aviso de dólar (se for o caso) e as observações
+// que o usuário escreveu. Item sem observação não aparece; sem nada, o campo vai vazio.
 function linhasObs(p, r) {
-  const usd = moedaDe(r) === 'USD';
-  const l = p.map((d, i) => `Item ${i + 1} - ${dataBR(d.data)}${usd ? ' - Despesa em dólar: US$ ' + valorInput(d.valor) : ''}${d.obs ? ' - ' + d.obs : ''}`);
-  return usd ? ['Todos os valores deste pedido estão em dólar americano (US$).', ...l] : l;
+  const l = p.map((d, i) => (d.obs ? `Item ${i + 1} - ${dataBR(d.data)} - ${d.obs}` : null)).filter(Boolean);
+  return moedaDe(r) === 'USD' ? ['Todos os valores deste pedido estão em dólar americano (US$).', ...l] : l;
 }
 async function despesasDe(rid) {
   const l = await dbByIndex('despesas', 'relatorioId', rid);
@@ -582,7 +582,7 @@ async function telaResumo(r) {
           </div>`;
         }).join('')}
         <h4 class="sep">Observações</h4>
-        ${campo('Data e observação de cada item', obs)}
+        ${campo('Observações', obs)}
       </section>`;
     }).join('')}
     ${navigator.canShare && Object.keys(arqs).length ? '<button id="share" class="btn">Compartilhar anexos guardados no celular</button>' : ''}`;
