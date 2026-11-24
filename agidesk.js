@@ -148,7 +148,7 @@ async function enviarAgidesk(r, progresso) {
     await gravar();
     progresso(`Criando o atendimento${rotuloParte}…`);
 
-    const titulo = (tituloRelatorio(r, nome) + (partes.length > 1 ? ` (${k + 1}/${partes.length})` : '')).slice(0, 256);
+    const titulo = (tituloRelatorio(r, nome, l) + (partes.length > 1 ? ` (${k + 1}/${partes.length})` : '')).slice(0, 256);
     const total = valorInput(soma(p));
     const obs = p.map((d, i) => esc(`Item ${i + 1} - ${dataBR(d.data)}${d.obs ? ' - ' + d.obs : ''}`)).join('<br>');
     const q = [];

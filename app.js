@@ -92,8 +92,9 @@ async function nomeColaborador() {
   const c = await dbGet('config', 'nome');
   return c ? c.valor : '';
 }
-function tituloRelatorio(r, nome) {
-  return `Reembolso - ${nome || '<seu nome>'} - ${r.mesAno}` + (r.evento ? ` - ${r.evento}` : '');
+// Título no Agidesk = nome da pasta do Drive ("AAAA-MM-DD-Nome da viagem", data da primeira nota)
+function tituloRelatorio(r, nome, l = []) {
+  return l.length ? nomePasta(r, l) : limparNome(r.apelido || r.evento || 'Relatorio');
 }
 async function despesasDe(rid) {
   const l = await dbByIndex('despesas', 'relatorioId', rid);
@@ -288,7 +289,7 @@ async function telaRelatorio(r) {
     <section class="card">
       <div class="linha"><span class="tag ${r.status}">${STATUS[r.status]}</span>${aberto ? `<a class="link" href="#/r/${r.id}/editar">Editar</a>` : ''}</div>
       <div class="rotulo">Título no Agidesk</div>
-      <div class="titulo-ag">${esc(tituloRelatorio(r, nome))}</div>
+      <div class="titulo-ag">${esc(tituloRelatorio(r, nome, l))}</div>
       <div class="rotulo">Valor total</div>
       <div class="total grande">${brl(soma(l))}</div>
       <div class="sub">${l.length}/${LIMITE_ITENS} itens${r.driveFolderId ? ` · <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">Abrir pasta no Drive</a>` : ''}</div>
@@ -469,7 +470,7 @@ async function telaResumo(r) {
       return `
       <section class="card">
         ${partes.length > 1 ? `<h3>Atendimento ${k + 1} de ${partes.length}</h3>` : ''}
-        ${campo('Título', tituloRelatorio(r, nome) + sufixo)}
+        ${campo('Título', tituloRelatorio(r, nome, l) + sufixo)}
         ${campo('Valor total', valorInput(soma(p)))}
         ${p.map((d, i) => {
           const a = arqs[d.id];
@@ -497,7 +498,7 @@ async function telaResumo(r) {
       return a && new File([a.blob], nomeAnexo(d, (i % LIMITE_ITENS) + 1, a), { type: a.tipo });
     }).filter(Boolean);
     if (!navigator.canShare({ files })) return alert('Este aparelho não permite compartilhar vários arquivos de uma vez.');
-    try { await navigator.share({ files, title: tituloRelatorio(r, nome) }); } catch { /* cancelado */ }
+    try { await navigator.share({ files, title: tituloRelatorio(r, nome, l) }); } catch { /* cancelado */ }
   });
 }
 
