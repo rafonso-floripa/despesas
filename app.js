@@ -19,6 +19,20 @@ const brl = c => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency
 const valorInput = c => (c == null ? '' : (c / 100).toFixed(2).replace('.', ','));
 const dataBR = iso => (iso ? iso.split('-').reverse().join('/') : '');
 const soma = l => l.reduce((s, d) => s + d.valor, 0);
+const dataHora = ts => (ts ? new Date(ts).toLocaleDateString('pt-BR') : '');
+const valorH = c => `<span class="v">${brl(c)}</span>`; // valor que o 👁 esconde
+
+// Olho do cabeçalho: mostra/esconde os valores (preferência deste aparelho)
+function aplicarOlho(trocar) {
+  let o = false;
+  try { o = localStorage.getItem('ocultarValores') === '1'; if (trocar) { o = !o; localStorage.setItem('ocultarValores', o ? '1' : '0'); } } catch { /* sem storage */ }
+  document.body.classList.toggle('ocultar', o);
+  const b = $('#olho');
+  b.textContent = o ? '🙈' : '👁';
+  b.title = o ? 'Mostrar valores' : 'Esconder valores';
+}
+$('#olho').onclick = () => aplicarOlho(true);
+aplicarOlho();
 
 function hojeISO() {
   const d = new Date();
@@ -148,25 +162,53 @@ async function telaLista() {
   const nome = await nomeColaborador();
   if (!nome) return go('/config');
   topo('Meus relatórios');
-  const rels = (await dbAll('relatorios')).sort((a, b) => b.criadoEm - a.criadoEm);
+  const todos = await dbAll('relatorios');
   const por = {};
   (await dbAll('despesas')).forEach(d => (por[d.relatorioId] ||= []).push(d));
+  const abertos = todos.filter(r => r.status === 'aberto').sort((a, b) => b.criadoEm - a.criadoEm);
+  const fechados = todos.filter(r => r.status !== 'aberto').sort((a, b) => (b.fechadoEm || 0) - (a.fechadoEm || 0));
+  const card = r => {
+    const l = por[r.id] || [];
+    const titulo = tituloRelatorio(r, nome);
+    const datas = l.map(d => d.data).sort();
+    const periodo = datas.length ? dataBR(datas[0]) + (datas.at(-1) !== datas[0] ? ' a ' + dataBR(datas.at(-1)) : '') : 'sem despesas';
+    const nums = (r.agidesk?.atendimentos || []).filter(a => a?.id).map(a => a.id);
+    const situacao = r.status === 'aberto' ? ''
+      : `<div class="sub">Fechado em ${dataHora(r.fechadoEm)} · ${r.status === 'enviado'
+        ? `<span class="ok-txt">✓ enviado ao Agidesk${nums.length ? ' (nº ' + nums.join(', ') + ')' : ''}</span>`
+        : nums.length ? '⚠️ envio ao Agidesk incompleto' : 'não enviado ao Agidesk'}</div>`;
+    const busca = [titulo, r.apelido, r.evento, periodo, dataHora(r.fechadoEm), nums.join(' '), ...l.map(d => d.descricao + ' ' + dataBR(d.data))].join(' ');
+    return `
+      <a class="card" href="#/r/${r.id}" data-busca="${esc(normal(busca))}">
+        <div class="linha"><strong>${esc(r.apelido || r.evento || 'Relatório ' + r.mesAno)}</strong><span class="tag ${r.status}">${STATUS[r.status]}</span></div>
+        <div class="sub">${periodo} · ${l.length} despesa${l.length === 1 ? '' : 's'}</div>
+        ${situacao}
+        <div class="total">${valorH(soma(l))}</div>
+      </a>`;
+  };
   app.innerHTML = `
     <div id="sync"></div>
-    ${rels.length ? rels.map(r => {
-      const l = por[r.id] || [];
-      return `
-      <a class="card" href="#/r/${r.id}">
-        <div class="linha"><strong>${esc(r.apelido || r.evento || 'Relatório ' + r.mesAno)}</strong><span class="tag ${r.status}">${STATUS[r.status]}</span></div>
-        <div class="sub">${esc(r.mesAno)} · ${l.length} despesa${l.length === 1 ? '' : 's'}</div>
-        <div class="total">${brl(soma(l))}</div>
-      </a>`;
-    }).join('') : `
+    ${todos.length ? `
+      <input id="busca" type="search" class="busca" value="${esc(buscaAtual)}" placeholder="🔎 Buscar por nome, descrição ou data (ex.: 11/2026)">
+      <h3 class="secao">Em aberto <span class="sub">(${abertos.length})</span></h3>
+      ${abertos.map(card).join('') || '<p class="sub vazio-sec">Nenhum relatório aberto.</p>'}
+      ${fechados.length ? `<h3 class="secao">Fechados <span class="sub">(${fechados.length})</span></h3>${fechados.map(card).join('')}` : ''}
+      <p id="nada" class="vazio" hidden>Nada encontrado.</p>` : `
       <div class="vazio"><p>Nenhum relatório ainda.</p><p>Crie um no início da viagem e vá incluindo as despesas.</p></div>`}
     <p class="rodape"><a href="#/config">Configurações</a></p>
     <div class="barra"><a class="btn primario" href="#/novo">+ Novo relatório</a></div>`;
+  const filtrar = () => {
+    buscaAtual = $('#busca').value;
+    const termos = buscaAtual.split(/\s+/).map(normal).filter(Boolean);
+    let n = 0;
+    $$('[data-busca]').forEach(c => { const ok = termos.every(t => c.dataset.busca.includes(t)); c.hidden = !ok; n += ok; });
+    $('#nada').hidden = n > 0;
+    $$('.vazio-sec').forEach(p => { p.hidden = termos.length > 0; });
+  };
+  if (todos.length) { $('#busca').oninput = filtrar; if (buscaAtual) filtrar(); }
   mostrarSync();
 }
+let buscaAtual = '';
 
 async function telaConfig() {
   const nome = await nomeColaborador();
@@ -298,16 +340,17 @@ async function telaRelatorio(r) {
       <div class="rotulo">Título no Agidesk</div>
       <div class="titulo-ag">${esc(tituloRelatorio(r, nome))}</div>
       <div class="rotulo">Valor total</div>
-      <div class="total grande">${brl(soma(l))}</div>
+      <div class="total grande">${valorH(soma(l))}</div>
       <div class="sub">${l.length}/${LIMITE_ITENS} itens${r.driveFolderId ? ` · <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">Abrir pasta no Drive</a>` : ''}</div>
       ${aviso ? `<p class="aviso">${aviso}</p>` : ''}
+      ${r.fechadoEm && !aberto ? `<div class="sub">Fechado em ${dataHora(r.fechadoEm)}${r.enviadoEm ? ' · enviado ao Agidesk em ' + dataHora(r.enviadoEm) : ' · não enviado ao Agidesk'}</div>` : ''}
       ${criados.length ? `<p class="aviso">${r.status === 'enviado' ? '✓ Enviado ao Agidesk' : 'Envio ao Agidesk incompleto'}: atendimento${criados.length > 1 ? 's' : ''} nº ${criados.join(', ')}.</p>` : ''}
     </section>
     ${l.length ? l.map((d, i) => `
       <a class="card item" href="#/r/${r.id}/d/${d.id}">
         <span class="ordem">${i + 1}</span>
         <span class="meio"><strong>${esc(d.descricao)}</strong><span class="sub">${dataBR(d.data)} · ${esc(d.centro)}${d.evento ? ' · ' + esc(d.evento) : ''}</span></span>
-        <span class="dir"><strong>${brl(d.valor)}</strong><span class="sub">${icone(d)}</span></span>
+        <span class="dir"><strong>${valorH(d.valor)}</strong><span class="sub">${icone(d)}</span></span>
       </a>`).join('') : '<div class="vazio">Nenhuma despesa ainda.</div>'}
     <div class="barra">
       ${aberto
