@@ -126,9 +126,18 @@ function tituloRelatorio(r, nome) {
   return `Reembolso - ${nome || '<seu nome>'} - ${mesAno}` + (fim ? ` - ${fim}` : '') + (moedaDe(r) === 'USD' ? ' (USD)' : '');
 }
 // Linhas do campo Observações do Agidesk. Em dólar: aviso no topo e o valor em US$ em cada item.
+// "23/11/2026" → "2026-11-23" (ou null se a data não existir)
+function lerData(txt) {
+  const m = String(txt || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return null;
+  const [, d, mes, a] = m.map(Number);
+  const dt = new Date(a, mes - 1, d);
+  if (dt.getFullYear() !== a || dt.getMonth() !== mes - 1 || dt.getDate() !== d || a < 2000) return null;
+  return `${a}-${String(mes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
 function linhasObs(p, r) {
   const usd = moedaDe(r) === 'USD';
-  const l = p.map((d, i) => `Item ${i + 1} - ${dataBR(d.data)}${usd ? ' - US$ ' + valorInput(d.valor) : ''}${d.obs ? ' - ' + d.obs : ''}`);
+  const l = p.map((d, i) => `Item ${i + 1} - ${dataBR(d.data)}${usd ? ' - Despesa em dólar: US$ ' + valorInput(d.valor) : ''}${d.obs ? ' - ' + d.obs : ''}`);
   return usd ? ['Todos os valores deste pedido estão em dólar americano (US$).', ...l] : l;
 }
 async function despesasDe(rid) {
@@ -433,7 +442,10 @@ async function telaDespesa(r, d) {
     <form id="f" class="card">
       <fieldset ${aberto ? '' : 'disabled'}>
         <label>Data da despesa*
-          <input type="date" name="data" required value="${esc(d.data)}"></label>
+          <span class="data-campo">
+            <input name="data" required inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" value="${esc(dataBR(d.data))}" autocomplete="off">
+            ${aberto ? '<button type="button" id="cal" class="mini" aria-label="Abrir calendário">📅</button><input type="date" id="dpick" class="escondido" tabindex="-1">' : ''}
+          </span></label>
         <label>Descrição da despesa*
           <input name="descricao" required maxlength="200" value="${esc(d.descricao)}" placeholder="Ex.: Táxi aeroporto → hotel"></label>
         <label>Valor da NF (${simbolo(r)})*
@@ -481,6 +493,18 @@ async function telaDespesa(r, d) {
     try { arqNovo = await prepararArquivo(file); mostrar(); }
     catch (err) { alert(err.message); }
   }
+  // data em dd/mm/aaaa: barras automáticas ao digitar + calendário do aparelho no 📅
+  const campoData = $('#f').data;
+  campoData.addEventListener('input', () => {
+    const n = campoData.value.replace(/\D/g, '').slice(0, 8);
+    campoData.value = [n.slice(0, 2), n.slice(2, 4), n.slice(4)].filter(Boolean).join('/');
+  });
+  $('#cal')?.addEventListener('click', () => {
+    const p = $('#dpick');
+    p.value = lerData(campoData.value) || hojeISO();
+    try { p.showPicker(); } catch { p.click(); }
+  });
+  $('#dpick')?.addEventListener('change', e => { if (e.target.value) campoData.value = dataBR(e.target.value); });
   $('#cam')?.addEventListener('change', escolher);
   $('#arq')?.addEventListener('change', escolher);
 
@@ -491,7 +515,9 @@ async function telaDespesa(r, d) {
     const valor = lerValor(f.valor.value);
     if (isNaN(valor)) return alert('Valor inválido. Use, por exemplo, 125,90.');
     if (!arqNovo && !temAnexo(d)) return alert('Anexe o comprovante (foto ou PDF). O Agidesk exige anexo em cada despesa.');
-    const campos = { data: f.data.value, descricao: f.descricao.value.trim(), valor, evento: f.evento.value, centro: f.centro.value, obs: f.obs.value.trim() };
+    const data = lerData(f.data.value);
+    if (!data) return alert('Data inválida. Use dd/mm/aaaa, por exemplo 23/11/2026.');
+    const campos = { data, descricao: f.descricao.value.trim(), valor, evento: f.evento.value, centro: f.centro.value, obs: f.obs.value.trim() };
     let atual = nova ? { id: novoId(), relatorioId: r.id, criadoEm: Date.now() } : (await dbGet('despesas', d.id)) || d;
     Object.assign(atual, campos);
     if (arqNovo) {

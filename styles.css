@@ -14,6 +14,9 @@ header h1 { font-size: 18px; margin: 0; flex: 1; white-space: nowrap; overflow: 
 #olho { background: none; border: 0; color: #fff; line-height: 0; padding: 4px 0 4px 8px; cursor: pointer; opacity: .9; }
 .mac { display: inline-block; font-size: 22px; line-height: 1; }
 .ocultar .v { filter: blur(7px); user-select: none; }
+.data-campo { display: flex; gap: 8px; align-items: center; position: relative; }
+.data-campo .mini { margin-top: 6px; font-size: 18px; padding: 8px 10px; }
+.escondido { position: absolute; right: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; padding: 0; border: 0; }
 .busca { margin: 0 0 4px; }
 .secao { margin: 18px 0 8px; font-size: 16px; }
 .ok-txt { color: var(--ok); }

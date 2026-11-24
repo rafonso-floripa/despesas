@@ -1,5 +1,5 @@
 // Permite abrir o app sem internet (busca na rede primeiro; sem rede, usa a cópia guardada).
-const CACHE = 'despesas-v14';
+const CACHE = 'despesas-v15';
 const ARQUIVOS = ['./', 'index.html', 'styles.css', 'app.js', 'db.js', 'drive.js', 'agidesk.js', 'config.js', 'valores.js', 'manifest.webmanifest', 'icon.svg'];
 
 self.addEventListener('install', e => {
