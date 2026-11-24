@@ -150,7 +150,7 @@ async function enviarAgidesk(r, progresso) {
 
     const titulo = (tituloRelatorio(r, nome) + (partes.length > 1 ? ` (${k + 1}/${partes.length})` : '')).slice(0, 256);
     const total = valorInput(soma(p));
-    const obs = p.map((d, i) => esc(`Item ${i + 1} - ${dataBR(d.data)}${d.obs ? ' - ' + d.obs : ''}`)).join('<br>');
+    const obs = linhasObs(p, r).map(esc).join('<br>');
     const q = [];
     const add = (chave, valor) => q.push([chave, String(valor)]);
     add('services', AG.servico); add('customers', AG.cliente); add('contacts', cfg.contatoId); add('forms', AG.form);

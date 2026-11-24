@@ -129,9 +129,9 @@ function csvRelatorio(r, l, nome) {
   const num = c => `=${c}/100`;
   const linhas = [
     ['', '', q('Titulo: ' + tituloRelatorio(r, nome))],
-    ['', '', q('Valor Total'), num(soma(l))],
+    ['', '', q(`Valor Total (${simbolo(r)})`), num(soma(l))],
     [],
-    ['Ordem', 'Data da Despesa', 'Descrição da Despesa', 'Valor da NF', 'Evento / Projeto', 'Centro de Custos', 'Arquivo', 'Observação (opcional)'].map(q),
+    ['Ordem', 'Data da Despesa', 'Descrição da Despesa', `Valor da NF (${simbolo(r)})`, 'Evento / Projeto', 'Centro de Custos', 'Arquivo', 'Observação (opcional)'].map(q),
     ...l.map((d, i) => [
       i + 1, q(d.data), q(d.descricao), num(d.valor), q(d.evento), q(d.centro),
       q(d.driveUrl || '(aguardando envio)'), q(d.obs ? `${dataBR(d.data)} - ${d.obs}` : ''),

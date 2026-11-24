@@ -15,12 +15,16 @@ const STATUS = { aberto: 'Aberto', fechado: 'Fechado', enviado: 'Enviado' };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const novoId = () => (window.crypto?.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
 const go = p => { location.hash = '#' + p; };
-const brl = c => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// Moeda do relatório: reais (padrão) ou dólar. Um relatório tem uma moeda só.
+const MOEDAS = { BRL: { simbolo: 'R$', nome: 'Reais (R$)' }, USD: { simbolo: 'US$', nome: 'Dólares (US$)' } };
+const moedaDe = r => (r?.moeda === 'USD' ? 'USD' : 'BRL');
+const simbolo = r => MOEDAS[moedaDe(r)].simbolo;
+const brl = (c, m = 'BRL') => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: m });
 const valorInput = c => (c == null ? '' : (c / 100).toFixed(2).replace('.', ','));
 const dataBR = iso => (iso ? iso.split('-').reverse().join('/') : '');
 const soma = l => l.reduce((s, d) => s + d.valor, 0);
 const dataHora = ts => (ts ? new Date(ts).toLocaleDateString('pt-BR') : '');
-const valorH = c => `<span class="v">${brl(c)}</span>`; // valor que o 👁 esconde
+const valorH = (c, m) => `<span class="v">${brl(c, m)}</span>`; // valor que o 👁 esconde
 
 // Olho do cabeçalho: mostra/esconde os valores (preferência deste aparelho)
 function aplicarOlho(trocar) {
@@ -119,7 +123,13 @@ function tituloRelatorio(r, nome) {
   const quando = r.enviadoEm ? new Date(r.enviadoEm) : new Date();
   const mesAno = r.mesAnoManual ? r.mesAno : String(quando.getMonth() + 1).padStart(2, '0') + '/' + quando.getFullYear();
   const fim = r.apelido || r.evento;
-  return `Reembolso - ${nome || '<seu nome>'} - ${mesAno}` + (fim ? ` - ${fim}` : '');
+  return `Reembolso - ${nome || '<seu nome>'} - ${mesAno}` + (fim ? ` - ${fim}` : '') + (moedaDe(r) === 'USD' ? ' (USD)' : '');
+}
+// Linhas do campo Observações do Agidesk. Em dólar: aviso no topo e o valor em US$ em cada item.
+function linhasObs(p, r) {
+  const usd = moedaDe(r) === 'USD';
+  const l = p.map((d, i) => `Item ${i + 1} - ${dataBR(d.data)}${usd ? ' - US$ ' + valorInput(d.valor) : ''}${d.obs ? ' - ' + d.obs : ''}`);
+  return usd ? ['Todos os valores deste pedido estão em dólar americano (US$).', ...l] : l;
 }
 async function despesasDe(rid) {
   const l = await dbByIndex('despesas', 'relatorioId', rid);
@@ -189,7 +199,7 @@ async function telaLista() {
         <div class="linha"><strong>${esc(r.apelido || r.evento || 'Relatório ' + r.mesAno)}</strong><span class="tag ${r.status}">${STATUS[r.status]}</span></div>
         <div class="sub">${periodo} · ${l.length} despesa${l.length === 1 ? '' : 's'}</div>
         ${situacao}
-        <div class="total">${valorH(soma(l))}</div>
+        <div class="total">${valorH(soma(l), moedaDe(r))}</div>
       </a>`;
   };
   app.innerHTML = `
@@ -281,7 +291,8 @@ async function telaConfig() {
 
 async function telaRelatorioForm(r) {
   const novo = !r;
-  r = r || { mesAno: mesAnoAtual(), evento: '', centro: '', apelido: '' };
+  r = r || { mesAno: mesAnoAtual(), evento: '', centro: '', apelido: '', moeda: 'BRL' };
+  const temDesp = !novo && (await despesasDe(r.id)).length > 0;
   topo(novo ? 'Novo relatório' : 'Editar relatório', novo ? '/' : `/r/${r.id}`);
   app.innerHTML = `
     <form id="f" class="card">
@@ -292,6 +303,9 @@ async function telaRelatorioForm(r) {
         <span class="dica">Vai no título do Agidesk. Se não mudar, vale o mês do envio.</span></label>
       <label>Evento / Projeto
         <select name="evento">${opcoes(VALORES.eventos, r.evento, '— Nenhum —')}</select></label>
+      <label>Moeda do relatório*
+        <select name="moeda" ${temDesp ? 'disabled' : ''}>${Object.entries(MOEDAS).map(([k, m]) => `<option value="${k}"${moedaDe(r) === k ? ' selected' : ''}>${m.nome}</option>`).join('')}</select>
+        <span class="dica">${temDesp ? 'Não dá para trocar depois de incluir despesas.' : 'Despesas em reais e em dólar ficam em relatórios separados.'}</span></label>
       <label>Centro de custos padrão*
         <select name="centro" required>${opcoes(VALORES.centros, r.centro, 'Selecione')}</select></label>
       <p class="dica">Evento e centro de custos viram o padrão de cada despesa nova. Dá para mudar item a item.</p>
@@ -302,7 +316,7 @@ async function telaRelatorioForm(r) {
     e.preventDefault();
     const f = e.target;
     const mesAno = f.mesAno.value.trim();
-    Object.assign(r, { apelido: f.apelido.value.trim(), mesAno, mesAnoManual: mesAno !== mesAnoAtual(), evento: f.evento.value, centro: f.centro.value });
+    Object.assign(r, { apelido: f.apelido.value.trim(), mesAno, mesAnoManual: mesAno !== mesAnoAtual(), moeda: f.moeda.value, evento: f.evento.value, centro: f.centro.value });
     if (novo) { r.id = novoId(); r.status = 'aberto'; r.criadoEm = Date.now(); r.versao = 0; }
     else r.versao = (r.versao || 0) + 1;
     await dbPut('relatorios', r);
@@ -346,7 +360,7 @@ async function telaRelatorio(r) {
       <div class="rotulo">Título no Agidesk</div>
       <div class="titulo-ag">${esc(tituloRelatorio(r, nome))}</div>
       <div class="rotulo">Valor total</div>
-      <div class="total grande">${valorH(soma(l))}</div>
+      <div class="total grande">${valorH(soma(l), moedaDe(r))}</div>
       <div class="sub">${l.length}/${LIMITE_ITENS} itens${r.driveFolderId ? ` · <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">Abrir pasta no Drive</a>` : ''}</div>
       ${aviso ? `<p class="aviso">${aviso}</p>` : ''}
       ${r.fechadoEm && !aberto ? `<div class="sub">Fechado em ${dataHora(r.fechadoEm)}${r.enviadoEm ? ' · enviado ao Agidesk em ' + dataHora(r.enviadoEm) : ' · não enviado ao Agidesk'}</div>` : ''}
@@ -356,7 +370,7 @@ async function telaRelatorio(r) {
       <a class="card item" href="#/r/${r.id}/d/${d.id}">
         <span class="ordem">${i + 1}</span>
         <span class="meio"><strong>${esc(d.descricao)}</strong><span class="sub">${dataBR(d.data)} · ${esc(d.centro)}${d.evento ? ' · ' + esc(d.evento) : ''}</span></span>
-        <span class="dir"><strong>${valorH(d.valor)}</strong><span class="sub">${icone(d)}</span></span>
+        <span class="dir"><strong>${valorH(d.valor, moedaDe(r))}</strong><span class="sub">${icone(d)}</span></span>
       </a>`).join('') : '<div class="vazio">Nenhuma despesa ainda.</div>'}
     <div class="barra">
       ${aberto
@@ -379,7 +393,7 @@ async function telaRelatorio(r) {
     if (enviandoAgidesk) return;
     const b = e.target;
     const n = Math.ceil(l.length / LIMITE_ITENS);
-    if (!criados.length && !confirm(`Enviar ao Agidesk ${n > 1 ? n + ' atendimentos' : 'um atendimento'} de reembolso com ${l.length} despesa(s), total ${brl(soma(l))}?\n\nIsso abre o pedido de verdade no financeiro.`)) return;
+    if (!criados.length && !confirm(`Enviar ao Agidesk ${n > 1 ? n + ' atendimentos' : 'um atendimento'} de reembolso com ${l.length} despesa(s), total ${brl(soma(l), moedaDe(r))}?\n\nIsso abre o pedido de verdade no financeiro.`)) return;
     // login do Google tem de ser pedido já no toque (comprovantes que estão só no Drive)
     const precisaDrive = l.some(d => !d.arquivoId && d.driveFileId && !r.agidesk?.arquivos?.[d.id]);
     const token = precisaDrive ? pedirToken() : Promise.resolve();
@@ -422,7 +436,7 @@ async function telaDespesa(r, d) {
           <input type="date" name="data" required value="${esc(d.data)}"></label>
         <label>Descrição da despesa*
           <input name="descricao" required maxlength="200" value="${esc(d.descricao)}" placeholder="Ex.: Táxi aeroporto → hotel"></label>
-        <label>Valor da NF (R$)*
+        <label>Valor da NF (${simbolo(r)})*
           <input name="valor" required inputmode="decimal" value="${valorInput(d.valor)}" placeholder="0,00"></label>
         <label>Evento / Projeto
           <select name="evento">${opcoes(VALORES.eventos, d.evento, '— Nenhum —')}</select></label>
@@ -522,12 +536,12 @@ async function telaResumo(r) {
     ${r.driveFolderId ? ` Os comprovantes estão na <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">pasta do Drive</a>.` : ''}</p>
     ${partes.map((p, k) => {
       const sufixo = partes.length > 1 ? ` (${k + 1}/${partes.length})` : '';
-      const obs = p.map((d, i) => `Item ${i + 1} - ${dataBR(d.data)}${d.obs ? ' - ' + d.obs : ''}`).join('\n');
+      const obs = linhasObs(p, r).join('\n');
       return `
       <section class="card">
         ${partes.length > 1 ? `<h3>Atendimento ${k + 1} de ${partes.length}</h3>` : ''}
         ${campo('Título', tituloRelatorio(r, nome) + sufixo)}
-        ${campo('Valor total', valorInput(soma(p)))}
+        ${campo(`Valor total (${simbolo(r)})`, valorInput(soma(p)))}
         ${p.map((d, i) => {
           const a = arqs[d.id];
           const link = a ? `<a class="mini" href="${objURL(a.blob)}" download="${esc(nomeAnexo(d, i + 1, a))}">Baixar</a>`
@@ -535,7 +549,7 @@ async function telaResumo(r) {
           return `
           <div class="item-res"><h4>Item ${i + 1}</h4>
             ${campo('Descrição da despesa', d.descricao)}
-            ${campo('Valor da NF', valorInput(d.valor))}
+            ${campo(`Valor da NF (${simbolo(r)})`, valorInput(d.valor))}
             ${campo('Evento / Projeto', d.evento)}
             ${campo('Centros de custos', d.centro)}
             ${campo('Anexo', a ? a.nome : d.driveNome || '', link)}
