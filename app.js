@@ -30,7 +30,11 @@ function aplicarOlho(trocar) {
   const b = $('#olho');
   const svg = p => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
   const olho = '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
-  b.innerHTML = svg(o ? olho + '<line x1="3" y1="3" x2="21" y2="21"/>' : olho);
+  // macaquinho tapando os olhos: orelhas, cabeça, duas mãos sobre os olhos e boca
+  const macaco = '<circle cx="3.8" cy="11.5" r="2.3"/><circle cx="20.2" cy="11.5" r="2.3"/><circle cx="12" cy="12.5" r="7.8"/>' +
+    '<rect x="5.6" y="8.4" width="5.6" height="4.4" rx="2.2"/><rect x="12.8" y="8.4" width="5.6" height="4.4" rx="2.2"/>' +
+    '<path d="M9.8 16.6q2.2 1.6 4.4 0"/>';
+  b.innerHTML = svg(o ? macaco : olho);
   b.title = o ? 'Mostrar valores' : 'Esconder valores';
 }
 $('#olho').onclick = () => aplicarOlho(true);
