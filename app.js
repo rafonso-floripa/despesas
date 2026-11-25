@@ -226,11 +226,11 @@ async function telaLista() {
   const abertos = todos.filter(r => r.status === 'aberto').sort((a, b) => b.criadoEm - a.criadoEm);
   const fechados = todos.filter(r => r.status !== 'aberto').sort((a, b) => (b.fechadoEm || 0) - (a.fechadoEm || 0));
 
-  // painel: quanto falta enviar e quanto já foi enviado no ano (separado por moeda)
+  // painel: total dos abertos e dos fechados no ano, igual às abas (separado por moeda)
   const ano = new Date().getFullYear();
   const totais = lista => lista.reduce((t, r) => { t[moedaDe(r)] += soma(por[r.id] || []); return t; }, { BRL: 0, USD: 0 });
-  const aEnviar = totais(todos.filter(r => r.status !== 'enviado'));
-  const enviados = totais(todos.filter(r => r.status === 'enviado' && new Date(r.enviadoEm || 0).getFullYear() === ano));
+  const totAbertos = totais(abertos);
+  const totFechados = totais(fechados.filter(r => new Date(r.fechadoEm || 0).getFullYear() === ano));
   const tot = t => `${valorH(t.BRL, 'BRL')}${t.USD ? `<small>${valorH(t.USD, 'USD')}</small>` : ''}`;
 
   const row = r => {
@@ -264,8 +264,8 @@ async function telaLista() {
     <div id="sync"></div>
     ${todos.length ? `
       <div class="painel">
-        <div class="card"><div class="rot">A enviar</div><div class="val">${tot(aEnviar)}</div></div>
-        <div class="card"><div class="rot">Enviado em ${ano}</div><div class="val">${tot(enviados)}</div></div>
+        <div class="card"><div class="rot">Abertos</div><div class="val">${tot(totAbertos)}</div></div>
+        <div class="card"><div class="rot">Fechados em ${ano}</div><div class="val">${tot(totFechados)}</div></div>
       </div>
       <div class="busca">${ico('busca', 18)}<input id="busca" type="search" value="${esc(buscaAtual)}" placeholder="Buscar por nome, despesa ou data"></div>
       <div class="seg" role="tablist">
