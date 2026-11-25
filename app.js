@@ -4,6 +4,37 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const app = $('#app');
 
+// Ícones de traço (estilo Lucide, licença ISC/MIT)
+const ICONES = {
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  seta: '<path d="m9 18 6-6-6-6"/>',
+  busca: '<circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/>',
+  camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  arquivo: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/>',
+  clipe: '<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
+  calendario: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  nuvem: '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="m9 14 2 2 4-4"/>',
+  nuvemoff: '<path d="m2 2 20 20"/><path d="M5.78 5.78A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.31-.2"/><path d="M21.53 16.11A4.5 4.5 0 0 0 17.5 10h-1.79A7 7 0 0 0 10.22 5.1"/>',
+  celular: '<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>',
+  alerta: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  enviar: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+  cadeado: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  aberto: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
+  editar: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+  lixo: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  pasta: '<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>',
+  recibo: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 17.5v-11"/>',
+  copiar: '<rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  baixar: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+  externo: '<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  chave: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/>',
+  usuario: '<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+  compartilhar: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/>',
+  ticket: '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/>',
+};
+const ico = (n, t = 20) => `<svg class="i" viewBox="0 0 24 24" width="${t}" height="${t}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONES[n]}</svg>`;
+
 const LIMITE_ITENS = 20;   // máximo de itens por reembolso no Agidesk
 const LIMITE_MB = 20;      // tamanho máximo de cada anexo no Agidesk
 const COMPRIMIR_MB = 1.5;  // fotos acima disso são reduzidas (comprovante continua legível)
@@ -42,6 +73,7 @@ function aplicarOlho(trocar) {
   b.title = o ? 'Mostrar valores' : 'Esconder valores';
 }
 $('#olho').onclick = () => aplicarOlho(true);
+$('#cfg').onclick = () => go('/config');
 aplicarOlho();
 
 function hojeISO() {
@@ -87,6 +119,7 @@ function topo(titulo, voltar) {
   const b = $('#voltar');
   b.hidden = !voltar;
   b.onclick = () => go(voltar || '/');
+  $('#cfg').hidden = !!voltar || location.hash.startsWith('#/config');
 }
 function opcoes(lista, sel, vazio) {
   const itens = sel && !lista.includes(sel) ? [...lista, sel] : lista;
@@ -186,53 +219,89 @@ async function prepararArquivo(file) {
 async function telaLista() {
   const nome = await nomeColaborador();
   if (!nome) return go('/config');
-  topo('Meus relatórios');
+  topo('Despesas');
   const todos = await dbAll('relatorios');
   const por = {};
   (await dbAll('despesas')).forEach(d => (por[d.relatorioId] ||= []).push(d));
   const abertos = todos.filter(r => r.status === 'aberto').sort((a, b) => b.criadoEm - a.criadoEm);
   const fechados = todos.filter(r => r.status !== 'aberto').sort((a, b) => (b.fechadoEm || 0) - (a.fechadoEm || 0));
-  const card = r => {
+
+  // painel: quanto falta enviar e quanto já foi enviado no ano (separado por moeda)
+  const ano = new Date().getFullYear();
+  const totais = lista => lista.reduce((t, r) => { t[moedaDe(r)] += soma(por[r.id] || []); return t; }, { BRL: 0, USD: 0 });
+  const aEnviar = totais(todos.filter(r => r.status !== 'enviado'));
+  const enviados = totais(todos.filter(r => r.status === 'enviado' && new Date(r.enviadoEm || 0).getFullYear() === ano));
+  const tot = t => `${valorH(t.BRL, 'BRL')}${t.USD ? `<small>${valorH(t.USD, 'USD')}</small>` : ''}`;
+
+  const row = r => {
     const l = por[r.id] || [];
-    const titulo = tituloRelatorio(r, nome);
     const datas = l.map(d => d.data).sort();
-    const periodo = datas.length ? dataBR(datas[0]) + (datas.at(-1) !== datas[0] ? ' a ' + dataBR(datas.at(-1)) : '') : 'sem despesas';
+    const periodo = datas.length ? dataBR(datas[0]).slice(0, 5) + (datas.at(-1) !== datas[0] ? ' a ' + dataBR(datas.at(-1)).slice(0, 5) : '') + '/' + datas[0].slice(0, 4) : 'Sem despesas';
     const nums = (r.agidesk?.atendimentos || []).filter(a => a?.id).map(a => a.id);
-    const situacao = r.status === 'aberto' ? ''
-      : `<div class="sub">Fechado em ${dataHora(r.fechadoEm)} · ${r.status === 'enviado'
-        ? `<span class="ok-txt">✓ enviado ao Agidesk${nums.length ? ' (nº ' + nums.join(', ') + ')' : ''}</span>`
-        : nums.length ? '⚠️ envio ao Agidesk incompleto' : 'não enviado ao Agidesk'}</div>`;
-    const busca = [titulo, r.apelido, r.evento, periodo, dataHora(r.fechadoEm), nums.join(' '), ...l.map(d => d.descricao + ' ' + dataBR(d.data))].join(' ');
+    const ic = r.status === 'enviado' ? `<span class="ic ok">${ico('check')}</span>`
+      : r.status === 'fechado' ? `<span class="ic neutro">${ico('cadeado')}</span>` : `<span class="ic">${ico('recibo')}</span>`;
+    const situacao = r.status === 'aberto' ? `${periodo} · ${l.length} despesa${l.length === 1 ? '' : 's'}`
+      : `Fechado em ${dataHora(r.fechadoEm)} · ${r.status === 'enviado' ? 'Agidesk nº ' + nums.join(', ') : nums.length ? 'envio incompleto' : 'não enviado'}`;
+    const busca = [tituloRelatorio(r, nome), r.apelido, r.evento, periodo, ...datas.map(dataBR), dataHora(r.fechadoEm), nums.join(' '), ...l.map(d => d.descricao)].join(' ');
     return `
-      <a class="card" href="#/r/${r.id}" data-busca="${esc(normal(busca))}">
-        <div class="linha"><strong>${esc(r.apelido || r.evento || 'Relatório ' + r.mesAno)}</strong><span class="tag ${r.status}">${STATUS[r.status]}</span></div>
-        <div class="sub">${periodo} · ${l.length} despesa${l.length === 1 ? '' : 's'}</div>
-        ${situacao}
-        <div class="total">${valorH(soma(l), moedaDe(r))}</div>
+      <a class="row" href="#/r/${r.id}" data-busca="${esc(normal(busca))}">
+        ${ic}
+        <span class="meio"><strong>${esc(r.apelido || r.evento || 'Relatório ' + r.mesAno)}</strong>
+          <span class="sub">${esc(situacao)}</span>
+          ${moedaDe(r) === 'USD' || r.status !== 'aberto' ? `<span class="chips">${r.status !== 'aberto' ? `<span class="chip ${r.status}">${STATUS[r.status]}</span>` : ''}${moedaDe(r) === 'USD' ? '<span class="chip moeda">US$</span>' : ''}</span>` : ''}
+        </span>
+        <span class="dir"><strong>${valorH(soma(l), moedaDe(r))}</strong></span>
+        <span class="seta">${ico('seta', 18)}</span>
       </a>`;
   };
+  const grupo = (id, lista, vazio) => `
+    <div id="${id}" data-aba="${id}">
+      ${lista.length ? `<div class="grupo">${lista.map(row).join('')}</div>` : ''}
+      <p class="vazio vazio-g" ${lista.length ? 'hidden' : ''}>${vazio}</p>
+    </div>`;
+
   app.innerHTML = `
     <div id="sync"></div>
     ${todos.length ? `
-      <input id="busca" type="search" class="busca" value="${esc(buscaAtual)}" placeholder="🔎 Buscar por nome, descrição ou data (ex.: 11/2026)">
-      <h3 class="secao">Abertos <span class="sub">(${abertos.length})</span></h3>
-      ${abertos.map(card).join('') || '<p class="sub vazio-sec">Nenhum relatório aberto.</p>'}
-      ${fechados.length ? `<h3 class="secao">Fechados <span class="sub">(${fechados.length})</span></h3>${fechados.map(card).join('')}` : ''}
-      <p id="nada" class="vazio" hidden>Nada encontrado.</p>` : `
-      <div class="vazio"><p>Nenhum relatório ainda.</p><p>Crie um no início da viagem e vá incluindo as despesas.</p></div>`}
-    <p class="rodape"><a href="#/config">Configurações</a></p>
-    <div class="barra"><a class="btn primario" href="#/novo">+ Novo relatório</a></div>`;
+      <div class="painel">
+        <div class="card"><div class="rot">A enviar</div><div class="val">${tot(aEnviar)}</div></div>
+        <div class="card"><div class="rot">Enviado em ${ano}</div><div class="val">${tot(enviados)}</div></div>
+      </div>
+      <div class="busca">${ico('busca', 18)}<input id="busca" type="search" value="${esc(buscaAtual)}" placeholder="Buscar por nome, despesa ou data"></div>
+      <div class="seg" role="tablist">
+        <button type="button" data-tab="abertos">Abertos<span class="n" id="n-abertos">${abertos.length}</span></button>
+        <button type="button" data-tab="fechados">Fechados<span class="n" id="n-fechados">${fechados.length}</span></button>
+      </div>
+      ${grupo('abertos', abertos, 'Nenhum relatório aberto. Toque em <b>Novo relatório</b> para começar.')}
+      ${grupo('fechados', fechados, 'Nenhum relatório fechado ainda.')}` : `
+      <div class="vazio">${ico('recibo', 56)}<strong>Nenhum relatório ainda</strong>Crie um no início da viagem e vá incluindo as despesas à medida que acontecem.</div>`}
+    <div class="barra"><a class="btn primario" href="#/novo">${ico('plus')} Novo relatório</a></div>`;
+
+  const mostrarAba = () => {
+    $$('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === abaAtual));
+    $$('[data-aba]').forEach(g => { g.hidden = g.dataset.aba !== abaAtual; });
+  };
   const filtrar = () => {
     buscaAtual = $('#busca').value;
     const termos = buscaAtual.split(/\s+/).map(normal).filter(Boolean);
-    let n = 0;
-    $$('[data-busca]').forEach(c => { const ok = termos.every(t => c.dataset.busca.includes(t)); c.hidden = !ok; n += ok; });
-    $('#nada').hidden = n > 0;
-    $$('.vazio-sec').forEach(p => { p.hidden = termos.length > 0; });
+    $$('[data-aba]').forEach(g => {
+      let n = 0;
+      $$('[data-busca]', g).forEach(c => { const ok = termos.every(t => c.dataset.busca.includes(t)); c.hidden = !ok; n += ok; });
+      $('#n-' + g.dataset.aba).textContent = n;
+      const grp = $('.grupo', g); if (grp) grp.hidden = n === 0;
+      const v = $('.vazio-g', g); v.hidden = n > 0;
+      if (termos.length && !n) v.textContent = 'Nada encontrado.';
+    });
   };
-  if (todos.length) { $('#busca').oninput = filtrar; if (buscaAtual) filtrar(); }
+  if (todos.length) {
+    $$('[data-tab]').forEach(b => { b.onclick = () => { abaAtual = b.dataset.tab; mostrarAba(); }; });
+    $('#busca').oninput = filtrar;
+    mostrarAba();
+    if (buscaAtual) filtrar();
+  }
   mostrarSync();
 }
+let abaAtual = 'abertos';
 let buscaAtual = '';
 
 async function telaConfig() {
@@ -246,29 +315,36 @@ async function telaConfig() {
     uso = `Espaço usado neste aparelho: ${(e.usage / 1048576).toFixed(1)} MB`;
   }
   app.innerHTML = `
+    <h2>Perfil</h2>
     <form id="f" class="card">
-      <label>Seu nome (vai no título do reembolso)*
+      <label>Seu nome <span class="opc">(vai no título do reembolso)</span>
         <input name="nome" required value="${esc(nome)}" placeholder="Ex.: Ricardo Afonso" autocomplete="name"></label>
       <button class="btn primario">Salvar</button>
     </form>
+    <h2>Google Drive</h2>
     <section class="card">
-      <h3>Google Drive</h3>
-      <p>Pasta dos reembolsos: <strong>${raiz ? esc(raiz.valor.nome) : 'não escolhida'}</strong></p>
+      <div class="row" style="padding:0 0 14px">
+        <span class="ic ${raiz ? 'ok' : ''}">${ico('pasta')}</span>
+        <span class="meio"><strong>${raiz ? esc(raiz.valor.nome) : 'Nenhuma pasta escolhida'}</strong><span class="sub">${raiz ? 'Pasta dos reembolsos' : 'Os comprovantes ficam só no celular'}</span></span>
+      </div>
       <button id="pasta" class="btn">${raiz ? 'Trocar pasta' : 'Conectar e escolher a pasta'}</button>
-      <p class="dica">Cada relatório vira uma subpasta "AAAA-MM-DD-Nome" (data da primeira nota) com os comprovantes e uma planilha. A cópia no celular é apagada depois que o Drive confirma o recebimento. O app só enxerga o que ele mesmo cria.</p>
+      <p class="dica">Cada relatório vira uma subpasta "AAAA-MM-DD-Nome" com os comprovantes e uma planilha. A cópia no celular é apagada depois que o Drive confirma o recebimento. O app só enxerga o que ele mesmo cria.</p>
     </section>
+    <h2>Agidesk</h2>
     <form id="fag" class="card">
-      <h3>Agidesk</h3>
-      ${ag ? `<p>Conectado como <strong>${esc(ag.contatoNome)}</strong> (contato ${ag.contatoId}).</p>` : '<p>Ainda não conectado: o envio é feito copiando e colando.</p>'}
-      <label>Seu e-mail no Agidesk
+      <div class="row" style="padding:0 0 14px">
+        <span class="ic ${ag ? 'ok' : ''}">${ico('ticket')}</span>
+        <span class="meio"><strong>${ag ? esc(ag.contatoNome) : 'Não conectado'}</strong><span class="sub">${ag ? 'Contato ' + ag.contatoId + ' · envio automático ativo' : 'Sem conexão, o envio é feito copiando e colando'}</span></span>
+      </div>
+      <label>E-mail no Agidesk
         <input name="email" type="email" required value="${esc(ag?.email || '')}" placeholder="nome@realcloud.com.br" autocomplete="email"></label>
       <label>Chave de acesso
         <input name="chave" type="password" required value="${esc(ag?.chave || '')}" autocomplete="off"></label>
-      <button class="btn">${ag ? 'Atualizar' : 'Conectar'}</button>
-      ${ag ? '<button type="button" id="agsair" class="btn perigo">Desconectar</button>' : ''}
+      <button class="btn primario">${ag ? 'Atualizar' : 'Conectar'}</button>
+      ${ag ? `<button type="button" id="agsair" class="btn fantasma">Desconectar</button>` : ''}
       <p class="dica">No Agidesk: "Oi, Usuário" → Meus dados → Relações → Chaves de acesso. A chave fica só neste aparelho.</p>
     </form>
-    <p class="dica">${uso}</p>`;
+    <p class="dica" style="text-align:center">${uso}</p>`;
   $('#fag').onsubmit = async e => {
     e.preventDefault();
     const f = e.target, b = f.querySelector('button');
@@ -305,22 +381,24 @@ async function telaRelatorioForm(r) {
   topo(novo ? 'Novo relatório' : 'Editar relatório', novo ? '/' : `/r/${r.id}`);
   app.innerHTML = `
     <form id="f" class="card">
-      <label>Nome da viagem (vai no nome da pasta do Drive)
+      <div class="form-sec">Identificação</div>
+      <label>Nome da viagem <span class="opc">(vai no título e na pasta do Drive)</span>
         <input name="apelido" value="${esc(r.apelido)}" placeholder="Ex.: Visita a Clientes SP"></label>
-      <label>Mês/ano*
-        <input name="mesAno" required value="${esc(r.mesAnoManual ? r.mesAno : mesAnoAtual())}" placeholder="MM/AAAA" pattern="(0[1-9]|1[0-2])/\\d{4}" title="Use o formato MM/AAAA">
+      <label>Mês/ano
+        <input name="mesAno" required inputmode="numeric" value="${esc(r.mesAnoManual ? r.mesAno : mesAnoAtual())}" placeholder="MM/AAAA" pattern="(0[1-9]|1[0-2])/\\d{4}" title="Use o formato MM/AAAA">
         <span class="dica">Vai no título do Agidesk. Se não mudar, vale o mês do envio.</span></label>
-      <label>Evento / Projeto
-        <select name="evento">${opcoes(VALORES.eventos, r.evento, '— Nenhum —')}</select></label>
-      <label>Moeda do relatório*
+      <label>Moeda
         <select name="moeda" ${temDesp ? 'disabled' : ''}>${Object.entries(MOEDAS).map(([k, m]) => `<option value="${k}"${moedaDe(r) === k ? ' selected' : ''}>${m.nome}</option>`).join('')}</select>
         <span class="dica">${temDesp ? 'Não dá para trocar depois de incluir despesas.' : 'Despesas em reais e em dólar ficam em relatórios separados.'}</span></label>
-      <label>Centro de custos padrão*
-        <select name="centro" required>${opcoes(VALORES.centros, r.centro, 'Selecione')}</select></label>
-      <p class="dica">Evento e centro de custos viram o padrão de cada despesa nova. Dá para mudar item a item.</p>
+      <div class="form-sec" style="margin-top:24px">Padrões das despesas</div>
+      <label>Evento / Projeto <span class="opc">(opcional)</span>
+        <select name="evento">${opcoes(VALORES.eventos, r.evento, '— Nenhum —')}</select></label>
+      <label>Centro de custos
+        <select name="centro" required>${opcoes(VALORES.centros, r.centro, 'Selecione')}</select>
+        <span class="dica">Viram o padrão de cada despesa nova. Dá para mudar item a item.</span></label>
       <button class="btn primario">${novo ? 'Criar relatório' : 'Salvar'}</button>
     </form>
-    ${novo ? '' : '<button id="excluir" class="btn perigo">Excluir relatório</button>'}`;
+    ${novo ? '' : `<button id="excluir" class="btn perigo">${ico('lixo', 18)} Excluir relatório</button>`}`;
   $('#f').onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
@@ -361,34 +439,47 @@ async function telaRelatorio(r) {
   let aviso = '';
   if (l.length > LIMITE_ITENS) aviso = `O Agidesk aceita até ${LIMITE_ITENS} itens por reembolso. Este relatório será dividido em ${Math.ceil(l.length / LIMITE_ITENS)} atendimentos.`;
   else if (l.length >= LIMITE_ITENS - 2) aviso = `Perto do limite de ${LIMITE_ITENS} itens por reembolso do Agidesk.`;
-  const icone = d => (d.arquivoId ? '📱 no celular' : d.driveFileId ? '☁️ no Drive' : '⚠️ sem anexo');
+  const moeda = moedaDe(r);
+  const thumbs = {};
+  for (const d of l) {
+    if (d.arquivoId) { const a = await dbGet('arquivos', d.arquivoId); if (a?.tipo?.startsWith('image/')) thumbs[d.id] = objURL(a.blob); }
+    else if (d.thumb) thumbs[d.id] = objURL(d.thumb);
+  }
+  const estado = d => (d.arquivoId ? `<span class="estado">${ico('celular', 13)} No celular</span>`
+    : d.driveFileId ? `<span class="estado ok">${ico('nuvem', 13)} No Drive</span>` : `<span class="estado alerta">${ico('alerta', 13)} Sem anexo</span>`);
+  const pct = Math.min(100, (l.length / LIMITE_ITENS) * 100);
+  const situacaoAg = r.status === 'enviado' ? `nº ${criados.join(', ')}` : criados.length ? `incompleto (nº ${criados.join(', ')})` : 'não enviado';
   app.innerHTML = `
     <div id="sync"></div>
-    <section class="card">
-      <div class="linha"><span class="tag ${r.status}">${STATUS[r.status]}</span>${aberto ? `<a class="link" href="#/r/${r.id}/editar">Editar</a>` : ''}</div>
-      <div class="rotulo">Título no Agidesk</div>
+    <section class="card hero">
+      <div class="linha" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span class="chips"><span class="chip ${r.status}">${STATUS[r.status]}</span>${moeda === 'USD' ? '<span class="chip moeda">Dólar (US$)</span>' : ''}</span>
+        ${aberto ? `<a class="pilula" href="#/r/${r.id}/editar">${ico('editar', 15)} Editar</a>` : ''}
+      </div>
+      <div class="grande" style="margin-top:14px">${valorH(soma(l), moeda)}</div>
       <div class="titulo-ag">${esc(tituloRelatorio(r, nome))}</div>
-      <div class="rotulo">Valor total</div>
-      <div class="total grande">${valorH(soma(l), moedaDe(r))}</div>
-      <div class="sub">${l.length}/${LIMITE_ITENS} itens${r.driveFolderId ? ` · <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">Abrir pasta no Drive</a>` : ''}</div>
-      ${aviso ? `<p class="aviso">${aviso}</p>` : ''}
-      ${r.fechadoEm && !aberto ? `<div class="sub">Fechado em ${dataHora(r.fechadoEm)}${r.enviadoEm ? ' · enviado ao Agidesk em ' + dataHora(r.enviadoEm) : ' · não enviado ao Agidesk'}</div>` : ''}
-      ${criados.length ? `<p class="aviso">${r.status === 'enviado' ? '✓ Enviado ao Agidesk' : 'Envio ao Agidesk incompleto'}: atendimento${criados.length > 1 ? 's' : ''} nº ${criados.join(', ')}.</p>` : ''}
+      <div class="prog ${l.length > LIMITE_ITENS ? 'cheio' : ''}"><i style="width:${pct}%"></i></div>
+      <div class="sub" style="font-size:13px">${l.length} de ${LIMITE_ITENS} itens por atendimento</div>
+      ${aviso ? `<p class="aviso">${ico('alerta', 18)}<span>${aviso}</span></p>` : ''}
+      ${!aberto ? `
+        <div class="info-l"><span>Fechado em</span><span>${dataHora(r.fechadoEm) || '—'}</span></div>
+        <div class="info-l"><span>Agidesk</span><span>${situacaoAg}${r.enviadoEm ? ' · ' + dataHora(r.enviadoEm) : ''}</span></div>` : ''}
+      ${r.driveFolderId ? `<div class="hero-acoes"><a class="pilula" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">${ico('pasta', 16)} Pasta no Drive</a></div>` : ''}
     </section>
-    ${l.length ? l.map((d, i) => `
-      <a class="card item" href="#/r/${r.id}/d/${d.id}">
-        <span class="ordem">${i + 1}</span>
+    <h2>Despesas</h2>
+    ${l.length ? `<div class="grupo">${l.map(d => `
+      <a class="row" href="#/r/${r.id}/d/${d.id}">
+        <span class="ic">${thumbs[d.id] ? `<img src="${thumbs[d.id]}" alt="">` : ico((d.driveTipo || '').includes('pdf') ? 'arquivo' : 'recibo')}</span>
         <span class="meio"><strong>${esc(d.descricao)}</strong><span class="sub">${dataBR(d.data)} · ${esc(d.centro)}${d.evento ? ' · ' + esc(d.evento) : ''}</span></span>
-        <span class="dir"><strong>${valorH(d.valor, moedaDe(r))}</strong><span class="sub">${icone(d)}</span></span>
-      </a>`).join('') : '<div class="vazio">Nenhuma despesa ainda.</div>'}
+        <span class="dir"><strong>${valorH(d.valor, moeda)}</strong>${estado(d)}</span>
+      </a>`).join('')}</div>` : `<div class="vazio">${ico('recibo', 48)}<strong>Nenhuma despesa ainda</strong>Inclua cada gasto assim que ele acontecer.</div>`}
     <div class="barra">
       ${aberto
-        ? `<a class="btn primario" href="#/r/${r.id}/d/nova">+ Adicionar despesa</a>${l.length ? '<button id="fechar" class="btn">Fechar relatório</button>' : ''}`
+        ? `<div class="linha-btn">${l.length ? `<button id="fechar" class="btn" style="flex:1">${ico('cadeado', 18)} Fechar</button>` : ''}<a class="btn primario" style="flex:1.6" href="#/r/${r.id}/d/nova">${ico('plus')} Adicionar despesa</a></div>`
         : r.status === 'enviado'
-          ? `<a class="btn" href="#/r/${r.id}/resumo">Ver resumo</a><button id="remover" class="btn perigo">Remover do app</button>`
-          : `${ag ? `<button id="enviar" class="btn primario">${criados.length ? 'Continuar envio ao Agidesk' : 'Enviar ao Agidesk'}</button><div id="progresso" class="sub rodape"></div>` : ''}
-             <a class="btn${ag ? '' : ' primario'}" href="#/r/${r.id}/resumo">Ver resumo (copiar e colar)</a>
-             ${criados.length ? '' : '<button id="reabrir" class="btn">Reabrir</button>'}`}
+          ? `<div class="linha-btn"><a class="btn" style="flex:1" href="#/r/${r.id}/resumo">${ico('copiar', 18)} Ver resumo</a><button id="remover" class="btn perigo" style="flex:1">${ico('lixo', 18)} Remover</button></div>`
+          : `${ag ? `<div id="progresso"></div><button id="enviar" class="btn primario">${ico('enviar', 18)} ${criados.length ? 'Continuar envio ao Agidesk' : 'Enviar ao Agidesk'}</button>` : ''}
+             <div class="linha-btn"><a class="btn${ag ? '' : ' primario'}" style="flex:1.4" href="#/r/${r.id}/resumo">${ico('copiar', 18)} Copiar e colar</a>${criados.length ? '' : `<button id="reabrir" class="btn fantasma" style="flex:1">${ico('aberto', 18)} Reabrir</button>`}</div>`}
     </div>`;
   mostrarSync();
   $('#fechar')?.addEventListener('click', async () => {
@@ -400,7 +491,7 @@ async function telaRelatorio(r) {
   });
   $('#enviar')?.addEventListener('click', async e => {
     if (enviandoAgidesk) return;
-    const b = e.target;
+    const b = e.currentTarget;
     const n = Math.ceil(l.length / LIMITE_ITENS);
     if (!criados.length && !confirm(`Enviar ao Agidesk ${n > 1 ? n + ' atendimentos' : 'um atendimento'} de reembolso com ${l.length} despesa(s), total ${brl(soma(l), moedaDe(r))}?\n\nIsso abre o pedido de verdade no financeiro.`)) return;
     // login do Google tem de ser pedido já no toque (comprovantes que estão só no Drive)
@@ -441,47 +532,49 @@ async function telaDespesa(r, d) {
   app.innerHTML = `
     <form id="f" class="card">
       <fieldset ${aberto ? '' : 'disabled'}>
-        <label>Data da despesa*
+        <label>Valor da NF
+          <span class="valor-campo"><span>${simbolo(r)}</span><input name="valor" required inputmode="decimal" value="${valorInput(d.valor)}" placeholder="0,00" autocomplete="off"></span></label>
+        <label>Descrição
+          <input name="descricao" required maxlength="200" value="${esc(d.descricao)}" placeholder="Ex.: Táxi aeroporto → hotel"></label>
+        <label>Data
           <span class="data-campo">
             <input name="data" required inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" value="${esc(dataBR(d.data))}" autocomplete="off">
-            ${aberto ? '<button type="button" id="cal" class="mini" aria-label="Abrir calendário">📅</button><input type="date" id="dpick" class="escondido" tabindex="-1">' : ''}
+            ${aberto ? `<button type="button" id="cal" class="ibtn" aria-label="Abrir calendário">${ico('calendario')}</button><input type="date" id="dpick" class="escondido" tabindex="-1">` : ''}
           </span></label>
-        <label>Descrição da despesa*
-          <input name="descricao" required maxlength="200" value="${esc(d.descricao)}" placeholder="Ex.: Táxi aeroporto → hotel"></label>
-        <label>Valor da NF (${simbolo(r)})*
-          <input name="valor" required inputmode="decimal" value="${valorInput(d.valor)}" placeholder="0,00"></label>
-        <label>Evento / Projeto
+        <label>Evento / Projeto <span class="opc">(opcional)</span>
           <select name="evento">${opcoes(VALORES.eventos, d.evento, '— Nenhum —')}</select></label>
-        <label>Centro de custos*
+        <label>Centro de custos
           <select name="centro" required>${opcoes(VALORES.centros, d.centro, 'Selecione')}</select></label>
-        <div class="rotulo">Comprovante* <span class="sub">(JPEG, PNG ou PDF, até ${LIMITE_MB} MB)</span></div>
-        <div id="prev" class="prev"></div>
-        ${aberto ? `
-        <div class="botoes2">
-          <label class="btn">📷 Tirar foto<input type="file" id="cam" accept="image/*" capture="environment" hidden></label>
-          <label class="btn">📁 Arquivo<input type="file" id="arq" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" hidden></label>
-        </div>` : ''}
-        <label>Observação (opcional)
+        <label style="margin-bottom:0">Comprovante <span class="opc">(JPEG, PNG ou PDF, até ${LIMITE_MB} MB)</span></label>
+        <div class="anexo">
+          <div id="prev"></div>
+          ${aberto ? `
+          <div class="botoes2">
+            <label class="btn">${ico('camera', 18)} Tirar foto<input type="file" id="cam" accept="image/*" capture="environment" hidden></label>
+            <label class="btn">${ico('clipe', 18)} Arquivo<input type="file" id="arq" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" hidden></label>
+          </div>` : ''}
+        </div>
+        <label>Observação <span class="opc">(opcional)</span>
           <textarea name="obs" rows="2" maxlength="500" placeholder="Vai para o campo Observações do Agidesk">${esc(d.obs)}</textarea></label>
       </fieldset>
-      ${aberto ? '<button class="btn primario">Salvar</button>' : ''}
+      ${aberto ? '<button class="btn primario">Salvar despesa</button>' : ''}
     </form>
-    ${aberto && !nova ? '<button id="excluir" class="btn perigo">Excluir despesa</button>' : ''}`;
+    ${aberto && !nova ? `<button id="excluir" class="btn perigo">${ico('lixo', 18)} Excluir despesa</button>` : ''}`;
 
   function mostrar() {
     const a = arqNovo || arqAtual;
     const p = $('#prev');
+    const bloco = (vis, nome, linha2, link) => `<div class="prev">${vis}<div class="info"><strong>${esc(nome)}</strong><span class="sub">${linha2}</span><br>${link}</div></div>`;
     if (a) {
       const u = objURL(a.blob);
-      p.innerHTML = (a.tipo === 'application/pdf'
-        ? `<a class="pdf" href="${u}" target="_blank">📄 Abrir PDF</a>`
-        : `<a href="${u}" target="_blank"><img src="${u}" alt="Comprovante"></a>`) +
-        `<div class="sub">${esc(a.nome)} · ${(a.blob.size / 1048576).toFixed(1)} MB · ${arqNovo ? 'novo (salve para guardar)' : '📱 aguardando envio ao Drive'}</div>`;
+      const vis = a.tipo === 'application/pdf' ? `<span class="doc">${ico('arquivo', 28)}</span>` : `<img src="${u}" alt="Comprovante">`;
+      p.innerHTML = bloco(vis, a.nome, `${(a.blob.size / 1048576).toFixed(1)} MB · ${arqNovo ? 'novo, salve para guardar' : 'aguardando envio ao Drive'}`,
+        `<a href="${u}" target="_blank">Abrir</a>`);
     } else if (d.driveFileId) {
-      p.innerHTML = (d.thumb ? `<img src="${objURL(d.thumb)}" alt="Miniatura do comprovante">` : '') +
-        `<a class="pdf" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">☁️ Abrir no Drive</a><div class="sub">${esc(d.driveNome)}</div>`;
+      const vis = d.thumb ? `<img src="${objURL(d.thumb)}" alt="Miniatura do comprovante">` : `<span class="doc">${ico('arquivo', 28)}</span>`;
+      p.innerHTML = bloco(vis, d.driveNome || 'Comprovante', 'Salvo no Google Drive', `<a href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Abrir no Drive</a>`);
     } else {
-      p.innerHTML = '<span class="sub">Nenhum arquivo anexado.</span>';
+      p.innerHTML = `<div class="vazio-anexo">${ico('recibo', 22)} Nenhum comprovante anexado.</div>`;
     }
   }
   mostrar();
@@ -555,11 +648,11 @@ async function telaResumo(r) {
   const nomeAnexo = (d, n, a) => `${String(n).padStart(2, '0')} - ${d.descricao}`.replace(/[\\/:*?"<>|]/g, '-').slice(0, 60) + '.' + EXT[a.tipo];
   const campo = (rot, txt, extra) => `
     <div class="campo"><div><div class="rotulo">${rot}</div><div>${esc(txt) || '—'}</div></div>
-    ${extra ?? (txt ? `<button type="button" class="mini" data-copy="${esc(txt)}">Copiar</button>` : '')}</div>`;
+    ${extra ?? (txt ? `<button type="button" class="mini" data-copy="${esc(txt)}">${ico('copiar', 14)} Copiar</button>` : '')}</div>`;
 
   app.innerHTML = `
-    <p class="dica">Use esta tela para preencher o "Reembolsos gerais" no Agidesk: toque em Copiar e cole em cada campo.
-    ${r.driveFolderId ? ` Os comprovantes estão na <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">pasta do Drive</a>.` : ''}</p>
+    <p class="aviso ok" style="margin:0 0 12px">${ico('copiar', 18)}<span>Use esta tela para preencher o "Reembolsos gerais" no Agidesk: toque em Copiar e cole em cada campo.
+    ${r.driveFolderId ? ` Os comprovantes estão na <a class="link" href="https://drive.google.com/drive/folders/${esc(r.driveFolderId)}" target="_blank" rel="noopener">pasta do Drive</a>.` : ''}</span></p>
     ${partes.map((p, k) => {
       const sufixo = partes.length > 1 ? ` (${k + 1}/${partes.length})` : '';
       const obs = linhasObs(p, r).join('\n');
@@ -570,8 +663,8 @@ async function telaResumo(r) {
         ${campo(`Valor total (${simbolo(r)})`, valorInput(soma(p)))}
         ${p.map((d, i) => {
           const a = arqs[d.id];
-          const link = a ? `<a class="mini" href="${objURL(a.blob)}" download="${esc(nomeAnexo(d, i + 1, a))}">Baixar</a>`
-            : d.driveUrl ? `<a class="mini" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Drive</a>` : '';
+          const link = a ? `<a class="mini" href="${objURL(a.blob)}" download="${esc(nomeAnexo(d, i + 1, a))}">${ico('baixar', 14)} Baixar</a>`
+            : d.driveUrl ? `<a class="mini" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">${ico('externo', 14)} Drive</a>` : '';
           return `
           <div class="item-res"><h4>Item ${i + 1}</h4>
             ${campo('Descrição da despesa', d.descricao)}
@@ -585,7 +678,7 @@ async function telaResumo(r) {
         ${campo('Observações', obs)}
       </section>`;
     }).join('')}
-    ${navigator.canShare && Object.keys(arqs).length ? '<button id="share" class="btn">Compartilhar anexos guardados no celular</button>' : ''}`;
+    ${navigator.canShare && Object.keys(arqs).length ? `<button id="share" class="btn">${ico('compartilhar', 18)} Compartilhar anexos do celular</button>` : ''}`;
 
   $$('[data-copy]').forEach(b => { b.onclick = () => copiar(b.dataset.copy); });
   $('#share')?.addEventListener('click', async () => {

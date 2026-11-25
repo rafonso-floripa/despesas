@@ -288,13 +288,14 @@ async function mostrarSync() {
     for (const r of await dbAll('relatorios')) if (await precisaSync(r, por[r.id] || [])) { pend = true; break; }
   }
   let html = '';
-  if (!raiz) html = `<div class="sync alerta">Os comprovantes ainda não vão para o Drive. <a href="#/config">Configurar</a></div>`;
-  else if (sync.rodando) html = `<div class="sync">⏳ Enviando ao Drive…</div>`;
-  else if ((n || pend) && !navigator.onLine) html = `<div class="sync">📴 ${n ? qtd + ' guardado(s) no celular' : 'Alterações guardadas no celular'}. Envio quando houver internet.</div>`;
-  else if (sync.estado === 'erro') html = `<div class="sync alerta">Erro no envio: ${esc(sync.erro)} <button class="mini" data-sync>Tentar de novo</button></div>`;
-  else if ((n || pend) && !lerToken()) html = `<div class="sync alerta">🔑 A conexão com o Google expirou. ${n ? qtd + ' aguardando' : 'Alterações aguardando'}. <button class="mini" data-sync>Reconectar ao Google</button></div>`;
-  else if (n || pend) html = `<div class="sync">📱 ${n ? qtd + ' aguardando envio' : 'Alterações aguardando envio'} <button class="mini" data-sync>Enviar ao Drive</button></div>`;
-  else if (desp.length) html = `<div class="sync ok">✓ Tudo salvo no Drive</div>`;
+  const faixa = (cls, icone, txt, botao) => `<div class="sync ${cls}"><span>${ico(icone, 18)}${txt}</span>${botao ? `<button class="mini" data-sync>${botao}</button>` : ''}</div>`;
+  if (!raiz) html = `<div class="sync alerta"><span>${ico('nuvemoff', 18)}Os comprovantes ainda não vão para o Drive.</span><a class="mini" href="#/config">Configurar</a></div>`;
+  else if (sync.rodando) html = faixa('', 'nuvem', 'Enviando ao Drive…');
+  else if ((n || pend) && !navigator.onLine) html = faixa('', 'nuvemoff', `${n ? qtd + ' no celular' : 'Alterações no celular'}. Envio quando houver internet.`);
+  else if (sync.estado === 'erro') html = faixa('alerta', 'alerta', 'Erro no envio: ' + esc(sync.erro), 'Tentar de novo');
+  else if ((n || pend) && !lerToken()) html = faixa('alerta', 'chave', `Conexão com o Google expirou. ${n ? qtd + ' aguardando' : 'Alterações aguardando'}.`, 'Reconectar');
+  else if (n || pend) html = faixa('', 'celular', n ? qtd + ' aguardando envio' : 'Alterações aguardando envio', 'Enviar ao Drive');
+  else if (desp.length) html = faixa('ok', 'nuvem', 'Tudo salvo no Drive');
   el.innerHTML = html;
 }
 
