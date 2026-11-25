@@ -142,8 +142,8 @@ fieldset:disabled input, fieldset:disabled select, fieldset:disabled textarea { 
 .form-sec { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: var(--sub); margin: 4px 0 12px; }
 
 /* valor com símbolo da moeda */
-.valor-campo { position: relative; }
-.valor-campo span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); margin-top: 3px; color: var(--sub); font-weight: 600; pointer-events: none; }
+.valor-campo { position: relative; display: block; }
+.valor-campo span { position: absolute; left: 16px; top: 6px; bottom: 0; display: flex; align-items: center; color: var(--sub); font-size: 17px; font-weight: 650; pointer-events: none; }
 .valor-campo input { padding-left: 50px; font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
 
 /* data dd/mm/aaaa + calendário */
