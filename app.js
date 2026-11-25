@@ -533,7 +533,7 @@ async function telaDespesa(r, d) {
     <form id="f" class="card">
       <fieldset ${aberto ? '' : 'disabled'}>
         <label>Valor da NF
-          <span class="valor-campo"><span>${simbolo(r)}</span><input name="valor" required inputmode="decimal" value="${valorInput(d.valor)}" placeholder="0,00" autocomplete="off"></span></label>
+          <span class="valor-campo"><span>${simbolo(r)}</span><input name="valor" required inputmode="numeric" value="${valorInput(d.valor)}" placeholder="0,00" autocomplete="off"></span></label>
         <label>Descrição
           <input name="descricao" required maxlength="200" value="${esc(d.descricao)}" placeholder="Ex.: Táxi aeroporto → hotel"></label>
         <label>Data
@@ -587,6 +587,14 @@ async function telaDespesa(r, d) {
     catch (err) { alert(err.message); }
   }
   // data em dd/mm/aaaa: barras automáticas ao digitar + calendário do aparelho no 📅
+  // valor: só números, preenchido da direita para a esquerda como nos apps de banco (12590 → 125,90)
+  const campoValor = $('#f').valor;
+  const mascaraValor = () => {
+    const n = campoValor.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 11);
+    campoValor.value = n ? (Number(n) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '';
+  };
+  campoValor.addEventListener('input', mascaraValor);
+  mascaraValor();
   const campoData = $('#f').data;
   campoData.addEventListener('input', () => {
     const n = campoData.value.replace(/\D/g, '').slice(0, 8);
