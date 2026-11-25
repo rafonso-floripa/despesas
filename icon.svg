@@ -1,5 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#E8552B"/>
-  <path d="M156 96 H356 V416 L323 394 L289 416 L256 394 L223 416 L189 394 L156 416 Z" fill="#fff"/>
-  <text x="256" y="300" font-family="Arial, sans-serif" font-size="120" font-weight="700" text-anchor="middle" fill="#E8552B">R$</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E8552B"/><stop offset="1" stop-color="#F2743F"/></linearGradient><mask id="m"><rect width="1000" height="688.6" fill="#fff"/><circle cx="259.2" cy="711.6" r="90.0" fill="#000"/><circle cx="437.9" cy="645.0" r="119.7" fill="#000"/><circle cx="627.4" cy="652.2" r="97.2" fill="#000"/><circle cx="753.4" cy="707.5" r="77.4" fill="#000"/></mask></defs><rect width="1000" height="1000" rx="225" fill="url(#g)"/><g mask="url(#m)"><circle cx="500.0" cy="699.9" r="328.5" fill="#fff"/></g></svg>
