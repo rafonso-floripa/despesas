@@ -142,9 +142,17 @@ fieldset:disabled input, fieldset:disabled select, fieldset:disabled textarea { 
 .form-sec { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: var(--sub); margin: 4px 0 12px; }
 
 /* valor com símbolo da moeda */
-.valor-campo { position: relative; display: block; }
-.valor-campo span { position: absolute; left: 16px; top: 6px; bottom: 0; display: flex; align-items: center; color: var(--sub); font-size: 20px; font-weight: 650; line-height: 1; pointer-events: none; }
-.valor-campo input { padding-left: 54px; font-size: 20px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+.valor-campo {
+  display: flex; align-items: baseline; gap: 8px; margin-top: 6px; padding: 0 14px;
+  background: var(--campo); border: 1.5px solid var(--borda); border-radius: var(--raio-p); transition: border-color .15s, box-shadow .15s;
+}
+.valor-campo:focus-within { border-color: var(--cor); box-shadow: 0 0 0 4px var(--cor-anel); }
+.valor-campo span { color: var(--sub); font-size: 20px; font-weight: 650; }
+.valor-campo input {
+  flex: 1; min-width: 0; margin: 0; padding: 12px 0; min-height: 0; border: 0; border-radius: 0; background: transparent;
+  font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums;
+}
+.valor-campo input:focus { box-shadow: none; }
 
 /* data dd/mm/aaaa + calendário */
 .data-campo { display: flex; gap: 8px; align-items: center; position: relative; }
